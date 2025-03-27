@@ -38,6 +38,7 @@ load_libraries <- function() {
   library(rgbif)         # Interface to GBIF API – used in downloading occurrence records in `load_gbif_data()`
   library(rnaturalearth) # High-quality vector data for countries and borders – used in mapping functions
   library(rnaturalearthdata) # Required data backend for rnaturalearth (needed for `ne_countries()` calls)
+  library(devtools)
   
   # Visualisation tools ----
   library(ggplot2)       # Core plotting library – used for all visualisation functions (species maps, predictions, overlap)

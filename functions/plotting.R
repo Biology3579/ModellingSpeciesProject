@@ -96,7 +96,8 @@ plot_glm_probability_raster <- function(
       plot.title = element_text(hjust = 0.5, face = "bold", size = 14), # Style title
       axis.title = element_text(face = "bold"), # Bold axis titles
       axis.text = element_text(size = 10), # Axis text size
-      legend.title = element_text(face = "bold")# Bold legend title
+      legend.title = element_text(face = "bold"), # Bold legend title
+      plot.margin = margin(t = 10, r = 10, b = 10, l = 10) # Adjust margins (top, right, bottom, left)
     )
 }
 

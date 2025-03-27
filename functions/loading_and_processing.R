@@ -64,6 +64,21 @@ filter_coords <- function(clean_data) {
 # Removing Ocean Points ----
 # This function removes coordinates that fall in the ocean using a shapefile of global ocean polygons.
 
+ensure_ocean_shapefile <- function() {
+  ocean_data_dir <- here("data", "raw", "ocean")
+  ocean_url <- "https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_ocean.zip"
+  zip_file <- file.path(ocean_data_dir, basename(ocean_url))
+  
+  if (!file.exists(zip_file)) {
+    dir.create(ocean_data_dir, recursive = TRUE, showWarnings = FALSE)
+    message("Downloading ocean shapefile...")
+    download.file(ocean_url, zip_file, mode = "wb")
+    unzip(zip_file, exdir = ocean_data_dir)
+    message("Ocean shapefile ready.")
+  }
+}
+
+# This function removes coordinates that fall in the ocean using a shapefile of global ocean polygons.
 get_mainland_points <- function(clean_data) {
   ocean_data_dir <- here("data", "raw", "ocean")    # Define directory to store ocean data
   if (!dir.exists(ocean_data_dir)) dir.create(ocean_data_dir)  # Create directory if it doesn't exist
