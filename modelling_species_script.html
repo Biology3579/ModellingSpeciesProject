@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Biology3579">
+<meta name="dcterms.date" content="2025-02-26">
+
+<title>Modelling Species Distributions</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="modelling_species_script_files/libs/clipboard/clipboard.min.js"></script>
+<script src="modelling_species_script_files/libs/quarto-html/quarto.js"></script>
+<script src="modelling_species_script_files/libs/quarto-html/popper.min.js"></script>
+<script src="modelling_species_script_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="modelling_species_script_files/libs/quarto-html/anchor.min.js"></script>
+<link href="modelling_species_script_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="modelling_species_script_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="modelling_species_script_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="modelling_species_script_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="modelling_species_script_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Modelling Species Distributions</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Biology3579 </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 26, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="set-up" class="level2">
+<h2 class="anchored" data-anchor-id="set-up">Set-up</h2>
+<p><strong>Important note:</strong> <em>Comprehensive instructions, including all prerequisites and detailed guidelines for running this analysis and relevant code, are available in the README file of my <a href="https://github.com/Biology3579/ModellingSpeciesProject.git">GitHub repository</a> for this project. Please refer to the README to ensure proper setup and usage.</em></p>
+<p>Before starting the analysis, the environment needs to be properly configured to match the that which was used during the development of this project. This ensures that all dependencies and required libraries are installed correctly and that the analysis can be run reproducibly on different machines.</p>
+<p>The renv package is used to manage R package environments, ensuring that the correct versions of libraries are installed to avoid compatibility issues. The renv::restore() command reads the renv.lock file, which contains a snapshot of the package versions used during the initial setup. If any packages are missing or have mismatched versions, they will be automatically installed or updated to match the specified environment. This ensures that the project runs consistently across different systems.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Restore the exact package versions used when the script was created</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># This ensures that the same set-up is used as when the code was originally developed</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>renv<span class="sc">::</span><span class="fu">restore</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>- The library is already synchronized with the lockfile.</code></pre>
+</div>
+</div>
+<p>Once the environment is set up, the libraries that will be used throughout the analysis need to be loaded. The load_libraries() function is sourced from an external script (libraries.R) and ensures that all required libraries are loaded in one step. Please refer to this script for a more comprehensive description of each package used.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source the library loading function from the libraries file</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Detailed description of each library and its use can be found in the sourced file</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"libraries.R"</span>))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Load necessary libraries using the custom function</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">load_libraries</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>As global climates change, ecosystems are facing increasingly unpredictable conditions that disrupt species interactions<sup>1</sup>. For agricultural crops, this poses a significant challenge, as pests and pathogens spread more rapidly into new areas<sup>2</sup>. In particular, climate change is expected to exacerbate the spread of invasive pests like the red palm weevil (<em>Rhynchophorus ferrugineus</em>), which threatens the date palm (<em>Phoenix dactylifera</em>). Warmer temperatures, increased rainfall, and changing humidity levels could create more favourable conditions for the weevil, allowing it to expand into regions previously unaffected, thereby potentially putting date palm cultivation at greater risk.</p>
+<p>This growing problem highlights the need to understand how climate change will influence the interactions between crops and pests. In this analysis, Species Distribution Models (SDMs) are used to predict how the distributions of the date palm and the red palm weevil might shift under future climate scenarios, helping to assess potential risks and inform management strategies for protecting date palms in the face of climate change.</p>
+<section id="study-region" class="level3">
+<h3 class="anchored" data-anchor-id="study-region">Study Region</h3>
+<p>The analysis focuses on regions where the date palm is native, including North Africa, the Middle East, and parts of southern Europe. These areas are not only important for date palm cultivation but also for the species’ natural occurrence. Given that the red palm weevil is a major pest of date palms, it is likely to be found in these regions, as confirmed by preliminary analyses.</p>
+<p>Additionally, a buffered extent around the defined study region was applied to ensure adequate coverage of surrounding habitats and to facilitate pseudo-absence sampling for model calibration.</p>
+<div class="cell" data-description="Define the study extent and create a buffered region">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define study extent explicitly (longitude: -20 to 60, latitude: -5 to 45)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>study_region <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">ext</span>(<span class="sc">-</span><span class="dv">20</span>, <span class="dv">60</span>, <span class="sc">-</span><span class="dv">5</span>, <span class="dv">45</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a 5-degree buffered region for broader analysis</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>buffered_region <span class="ot">&lt;-</span> <span class="fu">extend</span>(study_region, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A global land shapefile (world_map) representing the global land areas, is used as a reference to create a study area mask. This mask helps focus the analysis on the specified geographic area, ensuring that only relevant land regions are included in the study.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load global land shapefile for reference</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>world_map <span class="ot">&lt;-</span> <span class="fu">world</span>(<span class="at">path =</span> <span class="st">"."</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert widened study region to raster for masking</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>study_area_mask <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">rasterize</span>(world_map, <span class="fu">rast</span>(buffered_region))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="species-1-phoenix-dactylifera-date-palm" class="level2">
+<h2 class="anchored" data-anchor-id="species-1-phoenix-dactylifera-date-palm">Species 1: <em>Phoenix dactylifera</em> (Date Palm)</h2>
+<section id="data-preparation" class="level3">
+<h3 class="anchored" data-anchor-id="data-preparation">Data Preparation</h3>
+<p>Occurrence records for <em>Phoenix dactylifera</em> (and later for <em>Rhynchophorus ferrugineus</em>) were obtained from the Global Biodiversity Information Facility (GBIF), a large online database that compiles biodiversity data from various sources, including museums, research institutions, and citizen science initiatives<sup>3</sup>. GBIF provides information on species distributions, including location, date, and environmental context.</p>
+<p>Before proceeding with the analysis, the raw dataset for <em>Phoenix dactylifera</em> occurrence records must first be processed to ensure it is appropriately structured. Accordingly, the raw data is cleaned and restructured, keeping only the most relevant variables and removing unnecessary columns. The data is then filtered to focus on the geographic region of interest and ocean points are excluded to ensure the analysis focuses on terrestrial occurrences of <em>Phoenix dactylifera</em>.</p>
+<p>A full breakdown of these data processing steps is implemented in the loading_and_processing.R script, which is sourced in the chunks to ensure proper data handling and preparation for the analysis.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source data loading function</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"loading_and_processing.R"</span>))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load raw GBIF data for date palm</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>palm_raw <span class="ot">&lt;-</span> <span class="fu">load_gbif_data</span>(<span class="st">"Phoenix dactylifera"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source data processing functions</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"loading_and_processing.R"</span>))</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create presence data for date palm</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>palm_presence_data <span class="ot">&lt;-</span> palm_raw <span class="sc">%&gt;%</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_species_data</span>() <span class="sc">%&gt;%</span>    <span class="co"># Remove duplicates and missing values</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_coords</span>() <span class="sc">%&gt;%</span> <span class="co"># Filter coordinates to study region</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_mainland_points</span> () <span class="co"># Filters out ocean points</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Save full distribution dataset</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(palm_presence_data, <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"processed"</span>, <span class="st">"palm_presence_data.rds"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Since the presence data sourced from GBIF only includes locations where the species has been observed, pseudo-absence points are used to represent areas where the species is not present, creating a balanced dataset for species distribution modeling. These points help account for the environmental conditions where the species could potentially occur but has not been observed, allowing for more accurate modeling of its potential distribution. In this analysis, 500 pseudo-absence points are generated to complement the presence data and improve the model’s predictive power.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source data processing function</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"loading_and_processing.R"</span>))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate distribution data with pseudo-absence points</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>palm_distribution_data <span class="ot">&lt;-</span> <span class="fu">generate_pseudo_absence_data</span>(palm_presence_data, <span class="at">num_points =</span> <span class="dv">500</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Save full distribution dataset</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(palm_distribution_data, <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"processed"</span>, <span class="st">"palm_distribution_data.rds"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To visualise the distribution of <em>Phoenix dactylifera</em>, a map was created using observed occurrences and pseudo-absence points. The plotting functions for generating this map are sourced from the plotting.R script, where all the plotting functions are stored. For further details on the plotting function, please refer to this script.</p>
+<div class="cell" data-description="Visualize date palm species distribution">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source plotting function</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"plotting.R"</span>))</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create distribution plot</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_species_distribution</span>(palm_distribution_data, palm_colour, <span class="at">title =</span> <span class="st">"Distribution of Date Palm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelling_species_script_files/figure-html/plot-palm-distribution-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Figure 1: Map showing the distribution of date palm across the study region.</em></p>
+<p>Figure 1 shows the geographic distribution of Date Palm within the study region. Purple points represent confirmed presence locations obtained from GBIF occurrence data, while grey points indicate pseudo-absence points. The distribution demonstrates the species’ concentration across North Africa, the Middle East, and parts of southern Europe, highlighting its native range and primary ecological zones.</p>
+</section>
+<section id="bioclimatic-variable-selection" class="level3">
+<h3 class="anchored" data-anchor-id="bioclimatic-variable-selection">Bioclimatic Variable Selection</h3>
+<p>The bioclimatic data is sourced from the WorldClim database, which provides high-resolution global climate data. The dataset includes various bioclimatic variables such as temperature, precipitation, and seasonality, which are crucial for understanding species distributions<sup>4</sup>. In this analysis, the specific bioclimatic data for the region of interest is either loaded from an existing file or downloaded and cropped to fit the study area.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define file path for bioclimatic data</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>bioclim_file_path <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"raw"</span>, <span class="st">"climate"</span>, <span class="st">"wc10.tif"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load existing raster or download and crop bioclimatic data</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">file.exists</span>(bioclim_file_path)) {</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  bioclim_data <span class="ot">&lt;-</span> <span class="fu">rast</span>(bioclim_file_path)  <span class="co"># Load existing raster</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Download, crop, and save bioclimatic data if not available</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  bioclim_data <span class="ot">&lt;-</span> <span class="fu">crop</span>(<span class="fu">worldclim_global</span>(<span class="at">var =</span> <span class="st">"bio"</span>, <span class="at">res =</span> <span class="dv">10</span>, <span class="at">path =</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"raw"</span>, <span class="st">"climate"</span>)), buffered_region)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">writeRaster</span>(bioclim_data, bioclim_file_path, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The selection of bioclimatic variables for <em>Phoenix dactylifera</em> was based on previous literature showing that temperature extremes and moisture availability are the most critical factors affecting its distribution <sup>5</sup> <sup>6</sup>. Specifically, the following variables were chosen:</p>
+<ul>
+<li><p>BIO5 (Max Temperature of the Warmest Month): Date Palms are sensitive to extreme heat, and this variable is crucial for assessing heat stress during the hottest periods, as noted in previous research.</p></li>
+<li><p>BIO6 (Min Temperature of the Coldest Month): This variable reflects the species’ low tolerance for cold temperatures, ensuring suitability for warmer regions.</p></li>
+<li><p>BIO14 (Precipitation of the Driest Month): Selected to capture the species’ tolerance to drought conditions, which is a key factor for Date Palm survival in arid environments.</p></li>
+<li><p>BIO16 (Precipitation of the Wettest Quarter): Chosen due to the species’ sensitivity to wet stress, particularly during fruit ripening, which has been emphasized in earlier studies.Variables like BIO5 (Max Temperature of the Warmest Month), BIO6 (Min Temperature of the Coldest Month), BIO14 (Precipitation of the Driest Month), and BIO16 (Precipitation of Wettest Quarter) were chosen because they directly influence the species’ survival, with temperature and moisture extremes being key limiting factors.</p></li>
+</ul>
+<p>Although also identified as potentially relevant for predicting <em>Phoenix dactylifera</em> distributions, BIO10 (Mean Temperature of the Warmest Quarter) and BIO12 (Annual Precipitation) were excluded due to high collinearity with BIO5 and BIO16, and their lower relevance for capturing the critical temperature and moisture extremes affecting Date Palm’s growth.</p>
+<p>These decisions were guided by preliminary analyses conducted in the choosing_bioclims.R script (under supplementary scripts folder), which assesses the correlations between selected bioclimatic variables. Please refer to this script for further detail.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source processing function</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"loading_and_processing.R"</span>))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Select and extract relevant bioclimatic variables</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>palm_model_data <span class="ot">&lt;-</span> <span class="fu">selected_bioclims</span>(palm_distribution_data, </span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">selected_bioclims =</span> <span class="fu">c</span>(<span class="st">"bio5"</span>, <span class="st">"bio6"</span>, <span class="st">"bio14"</span>, <span class="st">"bio16"</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Save processed dataset</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(palm_model_data, <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"processed"</span>, <span class="st">"palm_model_data.rds"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="model-fitting-and-evaluation" class="level3">
+<h3 class="anchored" data-anchor-id="model-fitting-and-evaluation">Model Fitting and Evaluation</h3>
+<p>The final model for <em>Phoenix dactylifera</em> was selected using AIC and AUC scores, as evaluated through model fitting and cross-validation (following Hijmans and Elith, 2019, recommendation <sup>7</sup>). The process, detailed in the model_testing_script.R, involved fitting multiple Generalized Linear Models (GLMs) with selected bioclimatic variables.</p>
+<ul>
+<li><p>AIC-based Model Selection: Models were compared using AIC, and the model with the lowest AIC was selected for its balance between goodness of fit and simplicity.</p></li>
+<li><p>K-fold Cross-Validation (AUC): Models were further assessed using K-fold cross-validation, with AUC scores indicating the model with the best predictive performance.</p></li>
+</ul>
+<p>The final model was chosen based on superior AIC and AUC scores, ensuring both statistical validity and predictive accuracy. For further details on the model selection, please refer to the model_testing_script.R.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit final GLM model with selected bioclimatic variables</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>final_palm_model <span class="ot">&lt;-</span> <span class="fu">glm</span>(presence <span class="sc">~</span> bio5 <span class="sc">+</span> bio6 <span class="sc">+</span> bio14 <span class="sc">+</span> bio16,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> palm_model_data)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Print model summary</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(final_palm_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = presence ~ bio5 + bio6 + bio14 + bio16, family = binomial(link = "logit"), 
+    data = palm_model_data)
+
+Coefficients:
+             Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept) 10.043605   0.657948  15.265  &lt; 2e-16 ***
+bio5        -0.220174   0.017377 -12.670  &lt; 2e-16 ***
+bio6         0.053638   0.012646   4.242 2.22e-05 ***
+bio14       -0.079070   0.009667  -8.179 2.85e-16 ***
+bio16       -0.005936   0.000469 -12.657  &lt; 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 2143.6  on 2006  degrees of freedom
+Residual deviance: 1788.6  on 2002  degrees of freedom
+AIC: 1798.6
+
+Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<p><em>Palm Model Summary: GLM for date palm distribution </em></p>
+<p>The date palm distribution model reveals that occurrence probability decreases with increasing maximum temperatures and reduced precipitation, while slightly increasing with warmer winter temperatures. All bioclimatic variables are statistically significant, demonstrating the species’ sensitivity to temperature and moisture extremes across its habitat range.</p>
+<p>This GLM model was used to predict the climatic suitability of Date Palm across the study region. The output is plotted on Figure 2 and Figure 3.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source plotting function</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"plotting.R"</span>))</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create probability plot without points</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_glm_probability_raster</span>(</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">final_glm_model =</span> final_palm_model,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">climate_data =</span> bioclim_data,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">buffered_region =</span> buffered_region,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"GLM Probability of Palm Occurrence (Present)"</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+|---------|---------|---------|---------|
+=========================================
+                                          </code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelling_species_script_files/figure-html/plot-palm-glm-probability-no-points-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Figure 2: Heat map showing the climatic suitability for date palm using the final_palm_model.</em></p>
+<p>This heat map depicts the predicted climatic suitability for <em>Phoenix dactylifera</em> across North Africa, the Middle East, and southern Europe, using a color gradient representing occurrence probability from 0 to 1. Deep purple regions (indicating 75-100% probability) are concentrated in specific areas of North Africa, particularly along the western and northern coastal zones, and in concentrated pockets of the Arabian Peninsula. Yellows and greens (25-50% probability) dominate much of the broader region, including interior North African territories and parts of the Middle East. The plot highlights spatial variations in habitat suitability, with the most favourable conditions appearing in coastal and sub-coastal zones characterised by specific temperature and precipitation regimes. Areas of lowest probability (blue to teal) are evident in the northern Mediterranean regions and higher elevation areas, reflecting the species’ sensitivity to temperature and moisture constraints.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source plotting function</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"plotting.R"</span>))</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create probability plot with presence points</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_probability_raster_and_presence</span>(</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  palm_presence_data, </span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">final_glm_model =</span> final_palm_model, </span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">buffered_region =</span> buffered_region,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">species_colour =</span> palm_colour, </span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"GLM Predicted Probability of Palm Occurrence"</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+|---------|---------|---------|---------|
+=========================================
+                                          </code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelling_species_script_files/figure-html/plot-palm-glm-probability-with-points-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Figure 3: Heat map showing the date palm occurrence probability with presence points.</em></p>
+<p>Figure 3 combines the GLM-predicted climatic suitability with actual presence points for date palm. Notably, the purple presence points strategically cluster in areas of higher predicted probability, demonstrating a strong overall correlation between the model’s predictions and actual species distribution. However, the relationship is not perfectly uniform. While most points are concentrated in coastal regions and areas with favourable climatic conditions (yellow to green zones of 50-75% probability), there are notable discrepancies. Some presence points appear in areas of lower predicted suitability, particularly in the northern Mediterranean and transition zones, suggesting that local microclimatic factors or other biotic variables not captured by the model may influence species distribution. Conversely, some high-probability regions (dark blue and purple zones) show fewer presence points, indicating potential habitat suitability that has not yet been fully explored or documented. These variations highlight the limitations of relying solely on broad climatic variables to predict exact species occurrence.</p>
+</section>
+</section>
+<section id="species-2-rhynchophorus-ferrugineus-red-palm-weevil" class="level2">
+<h2 class="anchored" data-anchor-id="species-2-rhynchophorus-ferrugineus-red-palm-weevil">Species 2: <em>Rhynchophorus ferrugineus</em> (red palm weevil)</h2>
+<section id="data-preparation-1" class="level3">
+<h3 class="anchored" data-anchor-id="data-preparation-1">Data Preparation</h3>
+<p>The occurrence records for <em>Rhynchophorus ferrugineus</em> were sourced from GBIF, similarly to <em>Phoenix dactylifera</em>.</p>
+<p>The same data processing steps were applied to the raw weevil data - including cleaning the data, filtering for the study region, and generating pseudo-absence points - reusing the functions from the loading_and_processing.R script.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source data loading function</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"loading_and_processing.R"</span>))</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load raw GBIF data for red palm weevil</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>weevil_raw <span class="ot">&lt;-</span> <span class="fu">load_gbif_data</span>(<span class="st">"Rhynchophorus ferrugineus"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source data processing functions</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"loading_and_processing.R"</span>))</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create presence data for red palm weevil</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>weevil_presence_data <span class="ot">&lt;-</span> weevil_raw <span class="sc">%&gt;%</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_species_data</span>() <span class="sc">%&gt;%</span>       <span class="co"># Remove duplicates and missing values</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter_coords</span>() <span class="sc">%&gt;%</span>            <span class="co"># Filter coordinates to study region</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_mainland_points</span>()          <span class="co"># Remove ocean points</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Save processed presence data</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(weevil_presence_data, <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"processed"</span>, <span class="st">"weevil_presence_data.rds"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source data processing function</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"loading_and_processing.R"</span>))</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate distribution data with pseudo-absence points</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>weevil_distribution_data <span class="ot">&lt;-</span> <span class="fu">generate_pseudo_absence_data</span>(weevil_presence_data, <span class="at">num_points =</span> <span class="dv">500</span>)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Save full distribution dataset</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(weevil_distribution_data, <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"processed"</span>, <span class="st">"weevil_distribution_data.rds"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Figure 4 was created using observed occurrences and pseudo-absence points to visualise the distribution of <em>Rhynchophorus ferrugineus</em>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source plotting function</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"plotting.R"</span>))</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create distribution plot</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_species_distribution</span>(weevil_distribution_data, weevil_colour, <span class="at">title =</span> <span class="st">"Distribution of red palm weevil Presence &amp; Pseudo-Absence"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelling_species_script_files/figure-html/plot-weevil-distribution-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Figure 4: Map showing the distribution of red palm weevil across the study region.</em></p>
+<p>This map illustrates the spatial distribution of red palm weevil occurrence across North Africa, the Middle East, and southern Europe. Red points represent confirmed presence locations, while grey points indicate pseudo-absence sampling sites. The red palm weevil presence is notably concentrated along the Mediterranean coastal regions, with dense clusters in southern Spain, coastal North Africa (particularly Tunisia and Algeria), and the Levantine coast. The grey pseudo-absence points provide a comprehensive background, highlighting the potential habitat range beyond confirmed occurrence locations. The distribution suggests the weevil’s preference for coastal and sub-coastal environments with specific climatic and ecological conditions conducive to its survival and spread.</p>
+</section>
+<section id="bioclimatic-variable-selection-1" class="level3">
+<h3 class="anchored" data-anchor-id="bioclimatic-variable-selection-1">Bioclimatic Variable Selection</h3>
+<p>To select the appropriate bioclimatic variables for <em>Rhynchophorus ferrugineus</em> a brief review of prior research was done, which highlighted the importance of temperature extremes and moisture availability as key environmental factors influencing its habitat suitability <sup>8</sup>.</p>
+<p>The following variables were selected for modeling the species’ distribution:</p>
+<p>-BIO2 (Mean Diurnal Temperature Range): This variable was chosen to reflect the weevil’s tolerance for temperature fluctuations, which is vital for its survival in warm climates, where high heat is prevalent.</p>
+<p>-BIO6 (Min Temperature of the Coldest Month): This variable is critical as the red palm weevil is highly sensitive to cold temperatures, which restricts its ability to expand into cooler regions. It plays a significant role in understanding the species’ capacity to overwinter in colder environments.</p>
+<p>-BIO16 (Precipitation of the Wettest Quarter): The red palm weevil’s sensitivity to excessive moisture during the wettest part of the year makes this variable important, particularly as wet conditions can negatively impact its survival during the reproductive phase.</p>
+<p>-BIO17 (Precipitation of the Driest Quarter): Given the species’ preference for warm, humid environments, this variable captures the effect of dry periods that may limit its expansion into arid regions.</p>
+<p>BIO1 (Annual Mean Temperature) was excluded from the analysis due to its high correlation with BIO2 (Mean Diurnal Temperature Range), since the annual mean temperature does not effectively capture the extreme conditions that are more relevant for the species’ survival. Instead, BIO6 was retained as it is more indicative of cold stress.</p>
+<p>For further details on the variable selection process, please refer to the choosing_bioclims.R script</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Process data for selected bioclimatic variables</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>weevil_model_data <span class="ot">&lt;-</span> <span class="fu">selected_bioclims</span>(weevil_distribution_data, </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">selected_bioclims =</span> <span class="fu">c</span>(<span class="st">"bio2"</span>, <span class="st">"bio6"</span>, <span class="st">"bio16"</span>, <span class="st">"bio17"</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Save processed dataset</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(weevil_model_data, <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"processed"</span>, <span class="st">"weevil_model_data.rds"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="model-fitting-and-evaluation-1" class="level3">
+<h3 class="anchored" data-anchor-id="model-fitting-and-evaluation-1">Model Fitting and Evaluation</h3>
+<p>The final model was chosen based on superior AIC and AUC scores, ensuring both statistical validity and predictive accuracy. For further details on the model selection, please refer to the model_testing_script.R.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit final GLM model with selected bioclimatic variables</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>final_weevil_model <span class="ot">&lt;-</span> <span class="fu">glm</span>(presence <span class="sc">~</span> bio2 <span class="sc">+</span> bio16 <span class="sc">+</span> bio17,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>), <span class="at">data =</span> weevil_model_data)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Print model summary</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(final_weevil_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = presence ~ bio2 + bio16 + bio17, family = binomial(link = "logit"), 
+    data = weevil_model_data)
+
+Coefficients:
+              Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept) 13.5074726  0.6373303  21.194   &lt;2e-16 ***
+bio2        -0.9746292  0.0473435 -20.586   &lt;2e-16 ***
+bio16       -0.0038899  0.0004397  -8.847   &lt;2e-16 ***
+bio17       -0.0002388  0.0019098  -0.125      0.9    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 2505.4  on 2876  degrees of freedom
+Residual deviance: 1443.4  on 2873  degrees of freedom
+AIC: 1451.4
+
+Number of Fisher Scoring iterations: 6</code></pre>
+</div>
+</div>
+<p><em>Weevil model summary: GLM for red palm weevil distribution </em></p>
+<p>The red palm weevil distribution model reveals two highly significant predictors with strong negative effects: temperature seasonality (bio2) and precipitation of the wettest quarter (bio16). The dramatic negative coefficient for temperature seasonality suggests the weevil is extremely sensitive to temperature fluctuations, while wet quarter precipitation also negatively impacts occurrence probability. Interestingly, precipitation of the driest quarter (bio17) shows no significant effect.</p>
+<p>This GLM model was used to predict the climatic suitability of date palm across the study region. The output is plotted on Figure 5 and Figure 6.</p>
+</section>
+<section id="model-prediction-and-visualisation" class="level3">
+<h3 class="anchored" data-anchor-id="model-prediction-and-visualisation">Model Prediction and Visualisation</h3>
+<p>The red palm weevil’s climatic suitability was predicted using the final GLM model and visualised on a map, showing high suitability in areas of the Middle East and North Africa.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source plotting function</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"plotting.R"</span>))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create probability plot without points</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_glm_probability_raster</span>(</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">final_glm_model =</span> final_weevil_model,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">climate_data =</span> bioclim_data,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">buffered_region =</span> buffered_region,</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"GLM Probability of Weevil Occurrence (Present)"</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+|---------|---------|---------|---------|
+=========================================
+                                          </code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelling_species_script_files/figure-html/plot-weevil-glm-probability-no-points-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Figure 5: Heat map showing the climatic suitability for red palm weevil using the final_palm_model.</em></p>
+<p>Figure 5 illustrates the predicted climatic suitability for <em>Rhynchophorus ferrugineus</em> across North Africa, the Middle East, and southern Europe. It reveals a more restricted potential distribution compared to the date palm, with highest suitability strongly linked to coastal and Mediterranean climate regions. Areas of moderate to high probability are most evident in southern Spain, coastal North Africa, the Levantine coast, and parts of the Arabian Peninsula, reflecting the weevil’s sensitivity to specific temperature and precipitation regimes.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source plotting function</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"plotting.R"</span>))</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create probability plot with presence points</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_probability_raster_and_presence</span>(</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  weevil_presence_data, </span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  final_weevil_model, </span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  buffered_region, </span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  weevil_colour, </span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"GLM Predicted Probability of Weevil Occurrence"</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+|---------|---------|---------|---------|
+=========================================
+                                          </code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelling_species_script_files/figure-html/plot-weevil-glm-probability-with-points-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Figure 6: Heat map showing the red palm weevil occurrence probability with presence points.</em></p>
+<p>This heat map integrates the GLM-predicted climatic suitability with actual presence points for the red palm weevil. The red presence points seem to cluster in areas of higher predicted probability, primarily along the Mediterranean coastal regions. While most points align with yellow and green zones of moderate to high suitability (50-75% probability), there are notable discrepancies. Some presence points appear in areas of lower predicted probability, particularly in the northern Mediterranean transition zones, suggesting that local abiotic conditions or other unaccounted variables influence species distribution. Conversely, some high-probability regions show fewer presence points, indicating potential habitat suitability not yet fully documented.</p>
+</section>
+</section>
+<section id="question-3-distribution-overlap" class="level2">
+<h2 class="anchored" data-anchor-id="question-3-distribution-overlap">Question 3: Distribution Overlap</h2>
+<section id="data-preparation-2" class="level3">
+<h3 class="anchored" data-anchor-id="data-preparation-2">Data Preparation</h3>
+<p>To determine the potential geographic regions where the two species may interact, a 10 km buffer was created around all confirmed presence records of <em>Phoenix dactylifera</em>. The buffer represents a potential interaction zone, indeed being a likely red weevil flying range <sup>9</sup>, where both species could be present. The overlap between the red palm weevil and date palm occurrence zones was calculated by identifying the spatial intersection between the buffered date palm zone and the red palm weevil presence data.</p>
+<p>To process the spatial data, the presence records of both species were converted into simple feature (sf) objects, which allow for easy manipulation of geographic coordinates. The coordinates for both species’ presence data were projected into a metric coordinate reference system (CRS) (EPSG: 3857) to allow for accurate distance and area calculations.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert presence data to sf objects</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>palm_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(palm_presence_data, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"lon"</span>, <span class="st">"lat"</span>), <span class="at">crs =</span> <span class="dv">4326</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>weevil_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(weevil_presence_data, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"lon"</span>, <span class="st">"lat"</span>), <span class="at">crs =</span> <span class="dv">4326</span>)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Project to metric CRS </span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>crs_proj <span class="ot">&lt;-</span> <span class="dv">3857</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>palm_proj <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(palm_sf, <span class="at">crs =</span> crs_proj)</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>weevil_proj <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(weevil_sf, <span class="at">crs =</span> crs_proj)</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create buffer around palm presence points</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>palm_buffer <span class="ot">&lt;-</span> <span class="fu">st_buffer</span>(palm_proj, <span class="at">dist =</span> <span class="dv">10000</span>)</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate spatial intersection (weevils inside buffer)</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>weevil_overlap <span class="ot">&lt;-</span> <span class="fu">st_intersection</span>(weevil_proj, palm_buffer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To illustrate the spatial overlap between date palm and red palm weevil distributions, a plot was created showing the presence points of both species, along with the overlapping areas. The plot highlights where the red palm weevil occurrence points intersect with the date palm buffer zone, providing a representation of their potential co-occurrence.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source plotting function</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"plotting.R"</span>))</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a plot of species overlap</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_species_overlap_points</span>(</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">palm_points =</span> palm_proj,</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">weevil_points =</span> weevil_proj,</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">overlap_points =</span> weevil_overlap,</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Palm and Weevil Presence Overlap"</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelling_species_script_files/figure-html/plot-species-overlap-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Figure 5: Spatial co-occurrence of date palm and red palm weevil.</em></p>
+<p>This overlap map illustrates the spatial overlap between the distribution of date palm and red palm weevil across North Africa, the Middle East, and southern Europe. Purple points represent confirmed date palm presence locations, while red points correspond to red palm weevil presence sites. Green points indicate the overlap between the two species, showing areas where both species occur within close proximity. As shown, the majority of overlap occurs in coastal and sub-coastal regions, particularly in parts of North Africa and the Middle East, where both species are likely to thrive. These areas are characterised by the appropriate climatic conditions for both species. The distribution of overlapping points suggests potential areas of increased risk for date palm cultivation, as these regions are more susceptible to red palm weevil infestations.</p>
+<p>The map also indicates areas where the weevil species occurs outside the palm buffer zone (red points outside the green area), which could signify the weevil’s spread into regions where palms are not yet established. This may point to the weevil’s capacity for range expansion, potentially ahead of its primary host, which is important for early detection and control. The overlap areas highlight potential ecological interactions between the two species and underscore the importance of integrated pest management, whereby monitoring efforts should prioritise these high-risk zones, where the co-occurrence of the host and pest species could lead to greater ecological and agricultural impact.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate overlap percentage</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>overlap_percentage <span class="ot">&lt;-</span> <span class="fu">mean</span>(</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowSums</span>(<span class="fu">st_within</span>(weevil_proj, palm_buffer, <span class="at">sparse =</span> <span class="cn">FALSE</span>)) <span class="sc">&gt;</span> <span class="dv">0</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Print result</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(overlap_percentage)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 28.79538</code></pre>
+</div>
+</div>
+<p>The calculated overlap percentage of 28.8% indicates that approximately 28.8% of the red palm weevil presence records fall within the 10 km buffer around the date palm occurrence points. This relatively low overlap suggests that while there is some spatial co-occurrence between the two species, a substantial portion of the red palm weevil’s distribution lies outside the immediate range of date palms. This low overlap may reflect several factors, such as sampling biases, spatial barriers, or ecological constraints that prevent the two species from being more widely distributed together in the study region. It may also indicate that the red palm weevil is capable of spreading into areas not yet inhabited by date palms, possibly due to dispersal dynamics or habitat suitability in regions outside the palms’ natural range. The overlap percentage is useful for understanding the potential areas at risk for pest infestations in date palm regions. However, given the low overlap, further monitoring and analysis are needed to assess how the weevil might invade or affect date palm populations over time, particularly in regions where the two species do not yet occur together.</p>
+</section>
+</section>
+<section id="question-4-interspecies-distribution-dependence" class="level2">
+<h2 class="anchored" data-anchor-id="question-4-interspecies-distribution-dependence">Question 4: Interspecies Distribution Dependence</h2>
+<p>This section investigates the potential influence of <em>Rhynchophorus ferrugineus</em> presence on the distribution of <em>Phoenix dactylifera</em>, while controlling for key climatic variables. A Generalised Linear Model (GLM) was constructed with palm presence as the response variable, incorporating both biotic (weevil presence) and abiotic (bioclimatic) predictors to evaluate their relative contributions.</p>
+<p>To assess spatial proximity between the two species, a 10 km buffer was applied around each recorded occurrence of <em>P. dactylifera</em>, allowing for the identification of <em>R. ferrugineus</em> locations falling within this range.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert date palm presence data to spatial format</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>palm_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(palm_model_data, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"lon"</span>, <span class="st">"lat"</span>), <span class="at">crs =</span> <span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="fu">st_crs</span>(weevil_overlap))</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a 10 km buffer around date palm presence points</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>palm_buffer <span class="ot">&lt;-</span> <span class="fu">st_buffer</span>(palm_sf, <span class="at">dist =</span> <span class="dv">10000</span>)  <span class="co"># 10 km buffer</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then the checked if the red palm weevil presence occurred within the buffer zone surrounding the date palm presence points. We added a new variable, weevil_overlap, to the date palm dataset, which indicates whether each palm point is within the weevil presence zone.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert red palm weevil presence data to spatial format</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>weevil_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(weevil_presence_data, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"lon"</span>, <span class="st">"lat"</span>), <span class="at">crs =</span> <span class="dv">4326</span>)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Transform to the same CRS as palm data for spatial operations</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>weevil_proj <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(weevil_sf, <span class="at">crs =</span> <span class="dv">3857</span>)</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if any weevil points fall within each palm buffer</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>palm_model_data<span class="sc">$</span>weevil_overlap <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lengths</span>(<span class="fu">st_intersects</span>(palm_buffer, weevil_proj)) <span class="sc">&gt;</span> <span class="dv">0</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Subsequently, the analysis evaluated whether occurrences of R. ferrugineus fell within the 10 km buffer zones surrounding P. dactylifera presence points. A new binary variable, weevil_overlap, was added to the date palm dataset to indicate whether each palm location was associated with the presence of the weevil within the defined spatial threshold.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the GLM with weevil overlap as a predictor</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>glm_biotic_dependence <span class="ot">&lt;-</span> <span class="fu">glm</span>(</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  presence <span class="sc">~</span> bio5 <span class="sc">+</span> bio6 <span class="sc">+</span> bio14 <span class="sc">+</span> bio16 <span class="sc">+</span> weevil_overlap,</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> palm_model_data,</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>)</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="co"># View model summary</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(glm_biotic_dependence)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = presence ~ bio5 + bio6 + bio14 + bio16 + weevil_overlap, 
+    family = binomial(link = "logit"), data = palm_model_data)
+
+Coefficients:
+                 Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)     7.4498750  0.7016485  10.618  &lt; 2e-16 ***
+bio5           -0.1563163  0.0184162  -8.488  &lt; 2e-16 ***
+bio6            0.0418221  0.0125153   3.342 0.000833 ***
+bio14          -0.1037660  0.0136177  -7.620 2.54e-14 ***
+bio16          -0.0053254  0.0004848 -10.984  &lt; 2e-16 ***
+weevil_overlap  4.9455422  0.7490590   6.602 4.05e-11 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 2143.6  on 2006  degrees of freedom
+Residual deviance: 1581.9  on 2001  degrees of freedom
+AIC: 1593.9
+
+Number of Fisher Scoring iterations: 8</code></pre>
+</div>
+</div>
+<p><em>Palm with weevil model summary: GLM for palm distribution, including GLM for date palm distribution including bioclimatic predictors and red palm weevil overlap</em></p>
+<p>As previously discussed in the Palm Model Summary, the GLM for date palm distribution shows that occurrence probability declines with rising maximum temperatures (BIO5) and decreasing precipitation (BIO14, BIO16), while increasing slightly with warmer winter conditions (BIO6). These results reinforce the ecological sensitivity of <em>Phoenix dactylifera</em> to both temperature extremes and water availability across its range. In this case, the inclusion of the weevil_overlap variable, which significantly improves model fit (substantial drop in AIC from 1798.6 to 1593.9), introduces a potential biotic factor influencing distribution. The positive relationship between date palm presence and areas where red palm weevils are found may not reflect direct causality but instead indicates overlapping ecological niches. Both species likely favour similar warm, moderately arid conditions — suggesting that the weevil may serve as an indirect indicator of suitable palm habitat. Alternatively, it could imply that once palms establish, they facilitate colonisation by the weevil, hinting at a host-pest dynamic that emerges under favourable environmental conditions.</p>
+</section>
+<section id="question-5-future-distribution-prediction" class="level2">
+<h2 class="anchored" data-anchor-id="question-5-future-distribution-prediction">Question 5: Future Distribution Prediction</h2>
+<section id="load-future-climate-projections" class="level3">
+<h3 class="anchored" data-anchor-id="load-future-climate-projections">Load Future Climate Projections</h3>
+<p>To assess the potential impacts of future climate change on the distributions of <em>Phoenix dactylifera</em> and <em>Rhynchophorus ferrugineus</em>, climate projections from the Coupled Model Intercomparison Project Phase 6 (CMIP6) were utilised for the period 2061–2080. The CanESM5 general circulation model was selected under the SSP2-4.5 emissions scenario, providing projected bioclimatic variables relevant to temperature, precipitation, and other climatic conditions influencing species habitats.</p>
+<p>The required bioclimatic data were obtained either by loading pre-existing datasets or by downloading and processing raw climate layers, which were subsequently cropped to the spatial extent of the study region.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: prepare-future-bioclim-data</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Define file path</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>future_bioclim_file <span class="ot">&lt;-</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"raw"</span>, <span class="st">"climate"</span>, <span class="st">"cmip6_2061_2080_canesm5_ssp245.tif"</span>)</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">file.exists</span>(future_bioclim_file)) {</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>  future_bioclim_data <span class="ot">&lt;-</span> <span class="fu">rast</span>(future_bioclim_file)</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>  future_bioclim_data <span class="ot">&lt;-</span> <span class="fu">cmip6_world</span>(</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">model =</span> <span class="st">"CanESM5"</span>,</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">var =</span> <span class="st">"bio"</span>, </span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">ssp =</span> <span class="st">"245"</span>,</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">res =</span> <span class="dv">10</span>,</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">time =</span> <span class="st">"2061-2080"</span>,</span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">path =</span> <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"raw"</span>, <span class="st">"climate"</span>)</span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>    magrittr<span class="sc">::</span><span class="fu">set_names</span>(<span class="fu">names</span>(bioclim_data)) <span class="sc">%&gt;%</span></span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">crop</span>(buffered_region)</span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">writeRaster</span>(future_bioclim_data, future_bioclim_file, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb37-21"><a href="#cb37-21" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="future-palm-distribution" class="level3">
+<h3 class="anchored" data-anchor-id="future-palm-distribution">Future Palm Distribution</h3>
+<p>Using the projected future climate data, the potential future suitability of <em>Phoenix dactylifera</em> within the study region was modelled. Predictions were generated using the previously constructed Generalised Linear Model (GLM), which was originally trained on current bioclimatic variables.</p>
+<p>The resulting output provides spatially explicit estimates of occurrence probability for <em>P. dactylifera</em> under anticipated future climatic conditions, offering insight into potential shifts in suitable habitat driven by climate change.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict future suitability based on final model</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>palm_prediction_future <span class="ot">&lt;-</span> <span class="fu">predict</span>(</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  future_bioclim_data,</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  final_palm_model,</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ext =</span> study_region,</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">"response"</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">crop</span>(study_region)</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Source plotting function</span></span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"plotting.R"</span>))</span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_glm_probability_raster</span>(</span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">final_glm_model =</span> final_palm_model,</span>
+<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">climate_data =</span> future_bioclim_data,</span>
+<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">buffered_region =</span> buffered_region,</span>
+<span id="cb38-18"><a href="#cb38-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"GLM Probability of Palm Occurrence (2061–2080)"</span></span>
+<span id="cb38-19"><a href="#cb38-19" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelling_species_script_files/figure-html/future-palm-distribution-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Figure 7: Heat map showing the projected date palm occurrence probability (2061-2080).</em> As shown in Figure 7, the projected date palm occurrence probability map for 2061-2080 illustrates the species’ potential future distribution across North Africa, the Middle East, and southern Europe. Transitioning from deep purple to bright yellow, the visualization reveals nuanced shifts in habitat suitability. Bright yellow zones indicate high probability areas, particularly in the Southern Arabian Peninsula, Nile Delta, and North African coastal regions, suggesting ecological resilience. Green intermediate zones span Central Africa and the Middle East, representing moderate occurrence potential. Deep purple regions, including the central Sahara and higher latitude areas, signal significantly reduced habitat suitability. This map fundamentally captures the date palm’s potential adaptive response to anticipated climate changes, highlighting the species’ dynamic ecological potential across complex geographical landscapes.</p>
+</section>
+<section id="future-red-palm-weevil-distribution" class="level3">
+<h3 class="anchored" data-anchor-id="future-red-palm-weevil-distribution">Future Red Palm Weevil Distribution</h3>
+<p>The future distribution of <em>Rhynchophorus ferrugineus</em> was projected using the same CMIP6 climate projections and modelling approach applied to <em>Phoenix dactylifera</em>. A Generalised Linear Model (GLM), previously developed using current bioclimatic variables, was used to estimate the future habitat suitability for the species. The prediction procedure mirrored that of the date palm model, generating occurrence probabilities for R. ferrugineus under projected climatic conditions for the 2061–2080 period.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict future suitability based on final model</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>weevil_prediction_future <span class="ot">&lt;-</span> <span class="fu">predict</span>(</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  future_bioclim_data,</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  final_weevil_model,</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ext =</span> study_region,</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">"response"</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">crop</span>(study_region)</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Source plotting function</span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"functions"</span>, <span class="st">"plotting.R"</span>))</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot </span></span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_glm_probability_raster</span>(</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">final_glm_model =</span> final_weevil_model,</span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">climate_data =</span> future_bioclim_data,</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">buffered_region =</span> buffered_region,</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"GLM Probability of Weevil Occurrence (2061–2080)"</span></span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelling_species_script_files/figure-html/future-weevil-distribution-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>Figure 8: Heat map showing the projected red palm weevil occurrence probability (2061-2080).</em></p>
+<p>The red palm weevil occurrence probability map for 2061-2080 reveals a nuanced spatial distribution across North Africa, the Middle East, and southern Europe. Deep purple zones of high probability concentrate in North African coastal regions and parts of the Arabian Peninsula, while yellow and green intermediate zones extensively cover interior territories. The visualization highlights potential weevil expansion, with lowest probabilities in northern Mediterranean and high-elevation areas, suggesting complex ecological constraints and climate-driven migration patterns.</p>
+</section>
+<section id="quantifying-range-changes" class="level3">
+<h3 class="anchored" data-anchor-id="quantifying-range-changes">Quantifying Range Changes</h3>
+<p>To evaluate changes in the geographic range of each species, predicted suitability rasters were first converted into binary format, where a value of 1 indicates suitable habitat and 0 indicates unsuitable habitat. This thresholding step identifies areas where the species is predicted to potentially occur under current or future climatic conditions.</p>
+<p>The binary rasters were then transformed into spatial point geometries to enable spatial analysis. For both Phoenix dactylifera and Rhynchophorus ferrugineus, these points were used to quantify the extent of suitable habitat. Buffer zones were created around each point to approximate continuous areas of suitability, allowing for the comparison of range size and distribution under current versus projected future conditions.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define threshold</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>threshold <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert raster predictions to binary (1 = suitable)</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>palm_binary_future   <span class="ot">&lt;-</span> palm_prediction_future <span class="sc">&gt;=</span> threshold</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>weevil_binary_future <span class="ot">&lt;-</span> weevil_prediction_future <span class="sc">&gt;=</span> threshold</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert binary rasters to point geometries</span></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>palm_future_points <span class="ot">&lt;-</span> <span class="fu">as.points</span>(palm_binary_future, <span class="at">values =</span> <span class="cn">TRUE</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the actual layer name (first layer in raster)</span></span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>layer_name <span class="ot">&lt;-</span> <span class="fu">names</span>(palm_binary_future)[<span class="dv">1</span>]</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Subset where value == 1 (suitable habitat)</span></span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>palm_future_points <span class="ot">&lt;-</span> palm_future_points[palm_future_points[[layer_name]] <span class="sc">==</span> <span class="dv">1</span>, ]</span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to sf object</span></span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>palm_future_points <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(palm_future_points, <span class="at">crs =</span> <span class="dv">4326</span>)</span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>weevil_future_points <span class="ot">&lt;-</span> <span class="fu">as.points</span>(weevil_binary_future, <span class="at">values =</span> <span class="cn">TRUE</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>layer_name_weevil <span class="ot">&lt;-</span> <span class="fu">names</span>(weevil_binary_future)[<span class="dv">1</span>]</span>
+<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>weevil_future_points <span class="ot">&lt;-</span> weevil_future_points[weevil_future_points[[layer_name_weevil]] <span class="sc">==</span> <span class="dv">1</span>, ]</span>
+<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a>weevil_future_points <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(weevil_future_points, <span class="at">crs =</span> <span class="dv">4326</span>)</span>
+<span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Reproject to metric CRS for buffering</span></span>
+<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a>crs_proj <span class="ot">&lt;-</span> <span class="dv">3857</span></span>
+<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a>palm_future_proj   <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(palm_future_points, <span class="at">crs =</span> crs_proj)</span>
+<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a>weevil_future_proj <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(weevil_future_points, <span class="at">crs =</span> crs_proj)</span>
+<span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Create 10 km buffer around future palm points</span></span>
+<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a>palm_future_buffer <span class="ot">&lt;-</span> <span class="fu">st_buffer</span>(palm_future_proj, <span class="at">dist =</span> <span class="dv">10000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To assess potential shifts in biotic interactions under future climate scenarios, the percentage change in spatial overlap between date palm and red palm weevil was calculated. This was achieved by comparing the number of red palm weevil presence points falling within a 10 km buffer of future suitable date palm habitat to the number of overlapping points under current conditions. The resulting percentage reflects the relative change in co-occurrence zones, providing an estimate of how climate change may influence the spatial dynamics between the species.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use sparse = TRUE (default) for both operations</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>weevils_in_buffer <span class="ot">&lt;-</span> weevil_proj <span class="sc">%&gt;%</span> </span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_within</span>(palm_buffer) <span class="sc">%&gt;%</span>  </span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lengths</span>() <span class="sc">&gt;</span> <span class="dv">0</span>  <span class="co"># More memory-efficient than rowSums()</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the same approach for future weevils</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>future_in_buffer <span class="ot">&lt;-</span> weevil_future_proj <span class="sc">%&gt;%</span></span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_within</span>(palm_future_buffer) <span class="sc">%&gt;%</span>  <span class="co"># sparse by default</span></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lengths</span>() <span class="sc">&gt;</span> <span class="dv">0</span>  <span class="co"># Logical vector: TRUE if within any buffer</span></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate percent change compared to present</span></span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>overlap_change_percent <span class="ot">&lt;-</span> ((<span class="fu">sum</span>(future_in_buffer) <span class="sc">-</span> <span class="fu">sum</span>(weevils_in_buffer)) <span class="sc">/</span> <span class="fu">sum</span>(weevils_in_buffer)) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the percentage change</span></span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(overlap_change_percent)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3625.535</code></pre>
+</div>
+</div>
+<p>The analysis revealed a substantial projected increase—approximately 3625%—in the spatial overlap between <em>Phoenix dactylifera</em> and <em>Rhynchophorus ferrugineus</em> under future climate conditions. This suggests a marked expansion of areas where both species may co-occur, potentially heightening the risk of pest impact on date palm populations in newly suitable regions. However, this prediction should be interpreted with caution. The projected overlap is based solely on climatic suitability and assumes that both species can fully disperse into all climatically suitable areas. In reality, biological, ecological, and anthropogenic constraints—such as dispersal limitations, land use change, or pest control measures—may restrict such extensive range expansion. Additionally, the use of buffer-based spatial proximity as a proxy for biotic interaction simplifies complex ecological dynamics. Despite these limitations, the result highlights areas that may warrant increased surveillance and risk assessment under future climate scenarios.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Future climate projections suggest a modest contraction in suitable habitat for <em>Phoenix dactylifera</em>, while <em>Rhynchophorus ferrugineus</em> is expected to maintain or expand its range. As a result, the spatial overlap between the two species is projected to increase, with a higher proportion of weevil occurrences falling within close proximity to areas suitable for date palm cultivation. This implies a potential intensification of host–pest interactions under future climate conditions, highlighting the need for proactive monitoring and pest management strategies in vulnerable regions.</p>
+<p>However, several limitations should be considered when interpreting these findings. The analysis assumes unrestricted dispersal of both species into newly suitable areas, which may not reflect real-world ecological or anthropogenic barriers. Additionally, the use of climate variables alone does not capture the full complexity of species distributions, which are also influenced by land use, biotic interactions, and human intervention. The spatial overlap based on buffer zones provides a simplified approximation of interaction potential and may overestimate actual risk. Despite these constraints, the findings offer a useful first step in identifying regions that could experience increased pest pressure in the context of climate change.</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<p>[1] Fontúrbel, F.E., Nespolo, R.F., Amico, G.C. and Watson, D.M. (2021). Climate change can disrupt ecological interactions in mysterious ways: using ecological generalists to forecast community-wide effects. Climate Change Ecology, 2, p.100044. doi:https://doi.org/10.1016/j.ecochg.2021.100044.</p>
+<p>[2] FAO (2025). FRA 2010&nbsp;|&nbsp;Global Forest Resources Assessments&nbsp;|&nbsp;Food and Agriculture Organization of the United Nations. [online] www.fao.org. Available at: https://www.fao.org/forest-resources-assessment/past-assessments/fra-2010/en/.</p>
+<p>[3] Global Biodiversity Information Facility (2024). GBIF. [online] Gbif.org. Available at: https://www.gbif.org/.</p>
+<p>[4] WorldClim (n.d.). Historical climate data — WorldClim 1 documentation. [online] www.worldclim.org. Available at: https://www.worldclim.org/data/worldclim21.html.</p>
+<p>[5] Shabani, F. and Kumar, L. (2014). Sensitivity Analysis of CLIMEX Parameters in Modeling Potential Distribution of Phoenix dactylifera L. PLoS ONE, [online] 9(4), p.e94867. doi:https://doi.org/10.1371/journal.pone.0094867.</p>
+<p>[6] Blach-Overgaard, A., Svenning, J.-C., Dransfield, J., Greve, M. and Balslev, H. (2010). Determinants of palm species distributions across Africa: the relative roles of climate, non-climatic environmental factors, and spatial constraints. Ecography, p.no-no. doi:https://doi.org/10.1111/j.1600-0587.2010.06273.x.</p>
+<p>[7] Hijmans, R.J. and Elith, J. (2019). Data preparation — R Spatial. [online] Rspatial.org. Available at: https://rspatial.org/sdm/2_sdm_occdata.html [Accessed 16 Mar.&nbsp;2025].</p>
+<p>[8] Wang, Z., Zhuo, Z., Ali, H., Mureed, S., Liu, Q., Yang, X. and Xu, D. (2024). Predicting potential habitat distribution of the invasive speciesRhynchophorus ferrugineusOlivier in China based on MaxEnt modelling technique and future climate change. Bulletin of Entomological Research, [online] 114(4), pp.524–533. doi:https://doi.org/10.1017/s0007485324000336.</p>
+<p>[9] Hoddle, M.S., Hoddle, C.D., Faleiro, J.R., El-Shafie, H. a. F., Jeske, D.R. and Sallam, A.A. (2015). How Far Can the Red Palm Weevil (Coleoptera: Curculionidae) Fly?: Computerized Flight Mill Studies With Field-Captured Weevils. Journal of Economic Entomology, [online] 108(6), pp.2599–2609. doi:https://doi.org/10.1093/jee/tov240.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

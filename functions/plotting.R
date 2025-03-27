@@ -81,23 +81,33 @@ plot_glm_probability_raster <- function(
     probability_col = "viridis"  # Colour palette for probability gradient
 ) {
   
-  predicted_distribution <- predict(climate_data, final_glm_model, type = "response")  # Predict probability from model
-  cropped <- crop(predicted_distribution, buffered_region)  # Crop raster to buffered study region
+  # Use terra functions for more efficient processing
+  predicted_distribution <- terra::predict(climate_data, final_glm_model, type = "response")
+  cropped <- terra::crop(predicted_distribution, terra::vect(buffered_region))
   
-  raster_df <- as.data.frame(cropped, xy = TRUE, na.rm = TRUE)  # Convert raster to dataframe with lon/lat
-  colnames(raster_df) <- c("lon", "lat", "probability") # Rename columns
+  # Aggregate raster to reduce resolution if needed
+  cropped <- terra::aggregate(cropped, fact = 2)
+  
+  # Convert to data frame with na.rm and error handling
+  tryCatch({
+    raster_df <- as.data.frame(cropped, xy = TRUE, na.rm = TRUE)
+    colnames(raster_df) <- c("lon", "lat", "probability")
+  }, error = function(e) {
+    message("Error converting raster to dataframe: ", e$message)
+    stop("Raster conversion failed. Try reducing raster resolution.")
+  })
   
   ggplot() +
-    geom_tile(data = raster_df, aes(x = lon, y = lat, fill = probability)) +  # Plot probability as raster tiles
-    scale_fill_viridis(option = probability_col, name = "Occurrence Probability") + # Add viridis colour scale
-    labs(title = title, x = "Longitude", y = "Latitude") + # Set labels
+    geom_tile(data = raster_df, aes(x = lon, y = lat, fill = probability)) +
+    scale_fill_viridis(option = probability_col, name = "Occurrence Probability") +
+    labs(title = title, x = "Longitude", y = "Latitude") +
     theme_minimal() +
     theme(
-      plot.title = element_text(hjust = 0.5, face = "bold", size = 14), # Style title
-      axis.title = element_text(face = "bold"), # Bold axis titles
-      axis.text = element_text(size = 10), # Axis text size
-      legend.title = element_text(face = "bold"), # Bold legend title
-      plot.margin = margin(t = 10, r = 10, b = 10, l = 10) # Adjust margins (top, right, bottom, left)
+      plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+      axis.title = element_text(face = "bold"),
+      axis.text = element_text(size = 10),
+      legend.title = element_text(face = "bold"),
+      plot.margin = margin(t = 10, r = 10, b = 10, l = 10)
     )
 }
 

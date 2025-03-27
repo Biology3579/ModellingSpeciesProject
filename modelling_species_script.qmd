@@ -62,7 +62,7 @@ if (!dir.exists(climate_dir)) {
 
 
 ## Introduction
-As global climates change, ecosystems are facing increasingly unpredictable conditions that disrupt species interactions. For agricultural crops, this poses a significant challenge, as pests and pathogens spread more rapidly into new areas []. In particular, climate change is expected to exacerbate the spread of invasive pests like the red palm weevil (*Rhynchophorus ferrugineus*), which threatens the date palm (*Phoenix dactylifera*). Warmer temperatures, increased rainfall, and changing humidity levels could create more favorable conditions for the weevil, allowing it to expand into regions previously unaffected, thereby putting date palm cultivation at greater risk [].
+As global climates change, ecosystems are facing increasingly unpredictable conditions that disrupt species interactions^1^. For agricultural crops, this poses a significant challenge, as pests and pathogens spread more rapidly into new areas^2^. In particular, climate change is expected to exacerbate the spread of invasive pests like the red palm weevil (*Rhynchophorus ferrugineus*), which threatens the date palm (*Phoenix dactylifera*). Warmer temperatures, increased rainfall, and changing humidity levels could create more favourable conditions for the weevil, allowing it to expand into regions previously unaffected, thereby potentially putting date palm cultivation at greater risk.
 
 This growing problem highlights the need to understand how climate change will influence the interactions between crops and pests. In this analysis, Species Distribution Models (SDMs) are used to predict how the distributions of the date palm and the red palm weevil might shift under future climate scenarios, helping to assess potential risks and inform management strategies for protecting date palms in the face of climate change. 
 
@@ -97,7 +97,7 @@ study_area_mask <- terra::rasterize(world_map, rast(buffered_region))
 ## Species 1: *Phoenix dactylifera* (Date Palm)
 
 ### Data Preparation
-Occurrence records for *Phoenix dactylifera* (and later for *Rhynchophorus ferrugineus*) were obtained from the Global Biodiversity Information Facility (GBIF), a large online database that compiles biodiversity data from various sources, including museums, research institutions, and citizen science initiatives []. GBIF provides information on species distributions, including location, date, and environmental context.
+Occurrence records for *Phoenix dactylifera* (and later for *Rhynchophorus ferrugineus*) were obtained from the Global Biodiversity Information Facility (GBIF), a large online database that compiles biodiversity data from various sources, including museums, research institutions, and citizen science initiatives^3^. GBIF provides information on species distributions, including location, date, and environmental context.
 
 Before proceeding with the analysis, the raw dataset for *Phoenix dactylifera* occurrence records must first be processed to ensure it is appropriately structured. 
 Accordingly, the raw data is cleaned and restructured, keeping only the most relevant variables and removing unnecessary columns. The data is then filtered to focus on the geographic region of interest and ocean points are excluded to ensure the analysis focuses on terrestrial occurrences of *Phoenix dactylifera*.
@@ -185,7 +185,7 @@ _Figure 1: Map showing the distribution of date palm across the study region._
 Figure 1 shows the geographic distribution of Date Palm within the study region. Purple points represent confirmed presence locations obtained from GBIF occurrence data, while grey points indicate pseudo-absence points. The distribution demonstrates the species' concentration across North Africa, the Middle East, and parts of southern Europe, highlighting its native range and primary ecological zones.
 
 ### Bioclimatic Variable Selection
-The bioclimatic data is sourced from the WorldClim database, which provides high-resolution global climate data. The dataset includes various bioclimatic variables such as temperature, precipitation, and seasonality, which are crucial for understanding species distributions []. In this analysis, the specific bioclimatic data for the region of interest is either loaded from an existing file or downloaded and cropped to fit the study area.
+The bioclimatic data is sourced from the WorldClim database, which provides high-resolution global climate data. The dataset includes various bioclimatic variables such as temperature, precipitation, and seasonality, which are crucial for understanding species distributions^4^. In this analysis, the specific bioclimatic data for the region of interest is either loaded from an existing file or downloaded and cropped to fit the study area.
 
 ```{r}
 #| label: prepare-bioclim-data
@@ -203,7 +203,7 @@ if (file.exists(bioclim_file_path)) {
 }
 ```
 
-The selection of bioclimatic variables for *Phoenix dactylifera* was based on previous literature showing that temperature extremes and moisture availability are the most critical factors affecting its distribution []. 
+The selection of bioclimatic variables for *Phoenix dactylifera* was based on previous literature showing that temperature extremes and moisture availability are the most critical factors affecting its distribution ^5^ ^6^. 
 Specifically, the following variables were chosen:
 
 - BIO5 (Max Temperature of the Warmest Month): Date Palms are sensitive to extreme heat, and this variable is crucial for assessing heat stress during the hottest periods, as noted in previous research.
@@ -235,7 +235,7 @@ saveRDS(palm_model_data, here("data", "processed", "palm_model_data.rds"))
 ```
 
 ### Model Fitting and Evaluation
-The final model for *Phoenix dactylifera* was selected using AIC and AUC scores, as evaluated through model fitting and cross-validation (following ... recommendation). The process, detailed in the model_testing_script.R, involved fitting multiple Generalized Linear Models (GLMs) with selected bioclimatic variables.
+The final model for *Phoenix dactylifera* was selected using AIC and AUC scores, as evaluated through model fitting and cross-validation (following Hijmans and Elith, 2019, recommendation ^7^). The process, detailed in the model_testing_script.R, involved fitting multiple Generalized Linear Models (GLMs) with selected bioclimatic variables.
 
 - AIC-based Model Selection: Models were compared using AIC, and the model with the lowest AIC was selected for its balance between goodness of fit and simplicity.
 
@@ -360,11 +360,11 @@ plot_species_distribution(weevil_distribution_data, weevil_colour, title = "Dist
 ```
 _Figure 4: Map showing the distribution of red palm weevil across the study region._
 
-This map illustrates the spatial distribution ofred palm weevil occurrence across North Africa, the Middle East, and southern Europe. Red points represent confirmed presence locations, while grey points indicate pseudo-absence sampling sites. Thered palm weevil presence is notably concentrated along the Mediterranean coastal regions, with dense clusters in southern Spain, coastal North Africa (particularly Tunisia and Algeria), and the Levantine coast. The grey pseudo-absence points provide a comprehensive background, highlighting the potential habitat range beyond confirmed occurrence locations. The distribution suggests the weevil's preference for coastal and sub-coastal environments with specific climatic and ecological conditions conducive to its survival and spread.
+This map illustrates the spatial distribution of red palm weevil occurrence across North Africa, the Middle East, and southern Europe. Red points represent confirmed presence locations, while grey points indicate pseudo-absence sampling sites. The red palm weevil presence is notably concentrated along the Mediterranean coastal regions, with dense clusters in southern Spain, coastal North Africa (particularly Tunisia and Algeria), and the Levantine coast. The grey pseudo-absence points provide a comprehensive background, highlighting the potential habitat range beyond confirmed occurrence locations. The distribution suggests the weevil's preference for coastal and sub-coastal environments with specific climatic and ecological conditions conducive to its survival and spread.
 
 ### Bioclimatic Variable Selection
 
-To select the appropriate bioclimatic variables for *Rhynchophorus ferrugineus* a brief review of prior research was done, which highlighted the importance of temperature extremes and moisture availability as key environmental factors influencing its habitat suitability [].
+To select the appropriate bioclimatic variables for *Rhynchophorus ferrugineus* a brief review of prior research was done, which highlighted the importance of temperature extremes and moisture availability as key environmental factors influencing its habitat suitability ^8^.
 
 The following variables were selected for modeling the species' distribution:
 
@@ -456,7 +456,7 @@ This heat map integrates the GLM-predicted climatic suitability with actual pres
 
 ### Data Preparation
 
-To determine the potential geographic regions where the two species may interact, a 10 km buffer was created around all confirmed presence records of *Phoenix dactylifera*. The buffer represents a potential interaction zone, where both species could be present. The overlap between the red palm weevil and date palm occurrence zones was calculated by identifying the spatial intersection between the buffered date palm zone and the red palm weevil presence data.
+To determine the potential geographic regions where the two species may interact, a 10 km buffer was created around all confirmed presence records of *Phoenix dactylifera*. The buffer represents a potential interaction zone, indeed being a likely red weevil flying range ^9^, where both species could be present. The overlap between the red palm weevil and date palm occurrence zones was calculated by identifying the spatial intersection between the buffered date palm zone and the red palm weevil presence data.
 
 To process the spatial data, the presence records of both species were converted into simple feature (sf) objects, which allow for easy manipulation of geographic coordinates. The coordinates for both species' presence data were projected into a metric coordinate reference system (CRS) (EPSG: 3857) to allow for accurate distance and area calculations.
 
@@ -603,8 +603,6 @@ if (file.exists(future_bioclim_file)) {
 
   writeRaster(future_bioclim_data, future_bioclim_file, overwrite = TRUE)
 }
-
-
 ```
 
 
@@ -721,15 +719,15 @@ To assess potential shifts in biotic interactions under future climate scenarios
 ```{r}
 #| label: future-weevil-overlap
 
-# Calculate current number of weevils inside the palm buffer
+# Use sparse = TRUE (default) for both operations
 weevils_in_buffer <- weevil_proj %>% 
-  st_within(palm_buffer, sparse = FALSE) %>%  # Check which weevils fall within the buffer
-  rowSums() > 0  # Logical vector: TRUE if within the buffer
+  st_within(palm_buffer) %>%  
+  lengths() > 0  # More memory-efficient than rowSums()
 
-# Calculate percentage of future weevils inside future palm buffer
+# Use the same approach for future weevils
 future_in_buffer <- weevil_future_proj %>%
-  st_within(palm_future_buffer, sparse = FALSE) %>%  # Spatial join: which weevils fall within the future buffer
-  rowSums() > 0  # Logical vector: TRUE if within any buffer
+  st_within(palm_future_buffer) %>%  # sparse by default
+  lengths() > 0  # Logical vector: TRUE if within any buffer
 
 # Calculate percent change compared to present
 overlap_change_percent <- ((sum(future_in_buffer) - sum(weevils_in_buffer)) / sum(weevils_in_buffer)) * 100
@@ -747,3 +745,20 @@ However, several limitations should be considered when interpreting these findin
 
 ## References
 
+[1] Fontúrbel, F.E., Nespolo, R.F., Amico, G.C. and Watson, D.M. (2021). Climate change can disrupt ecological interactions in mysterious ways: using ecological generalists to forecast community-wide effects. Climate Change Ecology, 2, p.100044. doi:https://doi.org/10.1016/j.ecochg.2021.100044.
+
+[2] FAO (2025). FRA 2010 | Global Forest Resources Assessments | Food and Agriculture Organization of the United Nations. [online] www.fao.org. Available at: https://www.fao.org/forest-resources-assessment/past-assessments/fra-2010/en/.
+
+[3] Global Biodiversity Information Facility (2024). GBIF. [online] Gbif.org. Available at: https://www.gbif.org/.
+
+[4] WorldClim (n.d.). Historical climate data — WorldClim 1 documentation. [online] www.worldclim.org. Available at: https://www.worldclim.org/data/worldclim21.html.
+
+[5] Shabani, F. and Kumar, L. (2014). Sensitivity Analysis of CLIMEX Parameters in Modeling Potential Distribution of Phoenix dactylifera L. PLoS ONE, [online] 9(4), p.e94867. doi:https://doi.org/10.1371/journal.pone.0094867.
+
+[6] Blach-Overgaard, A., Svenning, J.-C., Dransfield, J., Greve, M. and Balslev, H. (2010). Determinants of palm species distributions across Africa: the relative roles of climate, non-climatic environmental factors, and spatial constraints. Ecography, p.no-no. doi:https://doi.org/10.1111/j.1600-0587.2010.06273.x.
+
+[7] Hijmans, R.J. and Elith, J. (2019). Data preparation — R Spatial. [online] Rspatial.org. Available at: https://rspatial.org/sdm/2_sdm_occdata.html [Accessed 16 Mar. 2025].
+
+[8] Wang, Z., Zhuo, Z., Ali, H., Mureed, S., Liu, Q., Yang, X. and Xu, D. (2024). Predicting potential habitat distribution of the invasive speciesRhynchophorus ferrugineusOlivier in China based on MaxEnt modelling technique and future climate change. Bulletin of Entomological Research, [online] 114(4), pp.524–533. doi:https://doi.org/10.1017/s0007485324000336.
+
+[9] Hoddle, M.S., Hoddle, C.D., Faleiro, J.R., El-Shafie, H. a. F., Jeske, D.R. and Sallam, A.A. (2015). How Far Can the Red Palm Weevil (Coleoptera: Curculionidae) Fly?: Computerized Flight Mill Studies With Field-Captured Weevils. Journal of Economic Entomology, [online] 108(6), pp.2599–2609. doi:https://doi.org/10.1093/jee/tov240.
