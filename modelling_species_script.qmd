@@ -131,6 +131,27 @@ saveRDS(palm_presence_data, here("data", "processed", "palm_presence_data.rds"))
 
 ```
 
+```{r}
+#| label: process-palm-presence-data_twice
+#| include: false
+
+# This is run again to ensure the correct processing (the get_mailand_points fucntion can take a while to load properly and so requires another run)
+
+# Source data processing functions
+source(here("functions", "loading_and_processing.R"))
+
+# Create presence data for date palm
+palm_presence_data <- palm_raw %>%
+  clean_species_data() %>%    # Remove duplicates and missing values
+  filter_coords() %>% # Filter coordinates to study region
+  get_mainland_points () # Filters out ocean points
+
+# Save full distribution dataset
+saveRDS(palm_presence_data, here("data", "processed", "palm_presence_data.rds"))
+
+```
+
+
 Since the presence data sourced from GBIF only includes locations where the species has been observed, pseudo-absence points are used to represent areas where the species is not present, creating a balanced dataset for species distribution modeling. These points help account for the environmental conditions where the species could potentially occur but has not been observed, allowing for more accurate modeling of its potential distribution. In this analysis, 500 pseudo-absence points are generated to complement the presence data and improve the model's predictive power.
 
 ```{r}
@@ -502,7 +523,7 @@ This section investigates the potential influence of *Rhynchophorus ferrugineus*
 To assess spatial proximity between the two species, a 10 km buffer was applied around each recorded occurrence of *P. dactylifera*, allowing for the identification of *R. ferrugineus* locations falling within this range.
 
 ```{r}
-#| label: ...
+#| label: 10-km-palm-buffer
 
 # Convert date palm presence data to spatial format
 palm_sf <- st_as_sf(palm_model_data, coords = c("lon", "lat"), crs = 4326) %>%
@@ -516,7 +537,7 @@ palm_buffer <- st_buffer(palm_sf, dist = 10000)  # 10 km buffer
 Then the checked if the red palm weevil presence occurred within the buffer zone surrounding the date palm presence points. We added a new variable, weevil_overlap, to the date palm dataset, which indicates whether each palm point is within the weevil presence zone.
 
 ```{r}
-#| label: ...
+#| label: calculate-weevil-overlap
 
 # Convert red palm weevil presence data to spatial format
 weevil_sf <- st_as_sf(weevil_presence_data, coords = c("lon", "lat"), crs = 4326)
@@ -534,7 +555,7 @@ palm_model_data$weevil_overlap <- as.integer(
 Subsequently, the analysis evaluated whether occurrences of R. ferrugineus fell within the 10 km buffer zones surrounding P. dactylifera presence points. A new binary variable, weevil_overlap, was added to the date palm dataset to indicate whether each palm location was associated with the presence of the weevil within the defined spatial threshold.
 
 ```{r}
-#| label: ...
+#| label: fit-GLM-with-weevil
 
 # Fit the GLM with weevil overlap as a predictor
 glm_biotic_dependence <- glm(
@@ -547,7 +568,7 @@ glm_biotic_dependence <- glm(
 summary(glm_biotic_dependence)
 
 ```
-_Palm with weevil model summary: GLM for palm distribution, including ...._
+_Palm with weevil model summary: GLM for palm distribution, including GLM for date palm distribution including bioclimatic predictors and red palm weevil overlap_
 
 As previously discussed in the Palm Model Summary, the GLM for date palm distribution shows that occurrence probability declines with rising maximum temperatures (BIO5) and decreasing precipitation (BIO14, BIO16), while increasing slightly with warmer winter conditions (BIO6). These results reinforce the ecological sensitivity of *Phoenix dactylifera* to both temperature extremes and water availability across its range. In this case, the inclusion of the weevil_overlap variable, which significantly improves model fit (substantial drop in AIC from 1798.6 to 1593.9), introduces a potential biotic factor influencing distribution. The positive relationship between date palm presence and areas where red palm weevils are found may not reflect direct causality but instead indicates overlapping ecological niches. Both species likely favour similar warm, moderately arid conditions — suggesting that the weevil may serve as an indirect indicator of suitable palm habitat. Alternatively, it could imply that once palms establish, they facilitate colonisation by the weevil, hinting at a host-pest dynamic that emerges under favourable environmental conditions.
 
@@ -594,9 +615,7 @@ Using the projected future climate data, the potential future suitability of *Ph
 The resulting output provides spatially explicit estimates of occurrence probability for *P. dactylifera* under anticipated future climatic conditions, offering insight into potential shifts in suitable habitat driven by climate change.
 
 ```{r}
-#| label: ...
-
-# ...
+#| label: future-palm-distribution
 
 # Predict future suitability based on final model
 palm_prediction_future <- predict(
@@ -627,7 +646,7 @@ As shown in Figure 7, the projected date palm occurrence probability map for 206
 The future distribution of *Rhynchophorus ferrugineus* was projected using the same CMIP6 climate projections and modelling approach applied to *Phoenix dactylifera*. A Generalised Linear Model (GLM), previously developed using current bioclimatic variables, was used to estimate the future habitat suitability for the species. The prediction procedure mirrored that of the date palm model, generating occurrence probabilities for R. ferrugineus under projected climatic conditions for the 2061–2080 period.
 
 ```{r}
-#| label: ...
+#| label: future-weevil-distribution
 
 # Predict future suitability based on final model
 weevil_prediction_future <- predict(
@@ -700,7 +719,7 @@ palm_future_buffer <- st_buffer(palm_future_proj, dist = 10000)
 To assess potential shifts in biotic interactions under future climate scenarios, the percentage change in spatial overlap between date palm and red palm weevil was calculated. This was achieved by comparing the number of red palm weevil presence points falling within a 10 km buffer of future suitable date palm habitat to the number of overlapping points under current conditions. The resulting percentage reflects the relative change in co-occurrence zones, providing an estimate of how climate change may influence the spatial dynamics between the species.
 
 ```{r}
-#| label: ...
+#| label: future-weevil-overlap
 
 # Calculate current number of weevils inside the palm buffer
 weevils_in_buffer <- weevil_proj %>% 
