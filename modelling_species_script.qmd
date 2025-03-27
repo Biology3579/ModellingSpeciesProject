@@ -11,7 +11,7 @@ editor: visual
 
 ## Set-up
 
-**Important note:** *Comprehensive instructions, including all prerequisites and detailed guidelines for running this analysis and relevant code, are available in the README file of my [GitHub repository](https://github.com/Biology3579/SARSCoV2Assignment.git) for this project. Please refer to the README to ensure proper setup and usage.*
+**Important note:** *Comprehensive instructions, including all prerequisites and detailed guidelines for running this analysis and relevant code, are available in the README file of my [GitHub repository](https://github.com/Biology3579/ModellingSpeciesProject.git) for this project. Please refer to the README to ensure proper setup and usage.*
 
 Before starting the  analysis, the environment needs to be properly configured to match the that which was used during the development of this project. This ensures that all dependencies and required libraries are installed correctly and that the analysis can be run reproducibly on different machines. 
 
@@ -58,17 +58,16 @@ if (!dir.exists(climate_dir)) {
   dir.create(climate_dir, recursive = TRUE)
 }
 
-
 ```
 
 
 ## Introduction
-As global climates change, ecosystems are facing increasingly unpredictable conditions that disrupt species interactions. For agricultural crops, this poses a significant challenge, as pests and pathogens spread more rapidly into new areas. In particular, climate change is expected to exacerbate the spread of invasive pests like the Red Palm Weevil (Rhynchophorus ferrugineus), which threatens the Date Palm (Phoenix dactylifera). Warmer temperatures, increased rainfall, and changing humidity levels could create more favorable conditions for the weevil, allowing it to expand into regions previously unaffected, thereby putting date palm cultivation at greater risk.
+As global climates change, ecosystems are facing increasingly unpredictable conditions that disrupt species interactions. For agricultural crops, this poses a significant challenge, as pests and pathogens spread more rapidly into new areas []. In particular, climate change is expected to exacerbate the spread of invasive pests like the red palm weevil (*Rhynchophorus ferrugineus*), which threatens the date palm (*Phoenix dactylifera*). Warmer temperatures, increased rainfall, and changing humidity levels could create more favorable conditions for the weevil, allowing it to expand into regions previously unaffected, thereby putting date palm cultivation at greater risk [].
 
-This growing problem highlights the need to understand how climate change will influence the interactions between crops and pests. In this analysis, Species Distribution Models (SDMs) are used to predict how the distributions of the Date Palm and the Red Palm Weevil might shift under future climate scenarios, helping to assess potential risks and inform management strategies for protecting date palms in the face of climate change. 
+This growing problem highlights the need to understand how climate change will influence the interactions between crops and pests. In this analysis, Species Distribution Models (SDMs) are used to predict how the distributions of the date palm and the red palm weevil might shift under future climate scenarios, helping to assess potential risks and inform management strategies for protecting date palms in the face of climate change. 
 
 ### Study Region
-The analysis focuses on regions where the Date Palm (Phoenix dactylifera) is native, including North Africa, the Middle East, and parts of southern Europe. These areas are not only important for date palm cultivation but also for the species' natural occurrence. Given that the Red Palm Weevil (Rhynchophorus ferrugineus) is a major pest of date palms, it is likely to be found in these regions, as confirmed by preliminary analyses.
+The analysis focuses on regions where the date palm is native, including North Africa, the Middle East, and parts of southern Europe. These areas are not only important for date palm cultivation but also for the species' natural occurrence. Given that the red palm weevil is a major pest of date palms, it is likely to be found in these regions, as confirmed by preliminary analyses.
 
 Additionally, a buffered extent around the defined study region was applied to ensure adequate coverage of surrounding habitats and to facilitate pseudo-absence sampling for model calibration.
 
@@ -86,7 +85,7 @@ buffered_region <- extend(study_region, 5)
 A global land shapefile (world_map) representing the global land areas, is used as a reference to create a study area mask. This mask helps focus the analysis on the specified geographic area, ensuring that only relevant land regions are included in the study.
 ```{r}
 #| label: prepare-world-map
-#| description: "Load global land shapefile and create a study area mask"
+#| message: false
 
 # Load global land shapefile for reference
 world_map <- world(path = ".")
@@ -95,18 +94,17 @@ world_map <- world(path = ".")
 study_area_mask <- terra::rasterize(world_map, rast(buffered_region))
 ```
 
-## Species 1: Phoenix dactylifera (Date Palm)
+## Species 1: *Phoenix dactylifera* (Date Palm)
 
 ### Data Preparation
-Occurrence records for Phoenix dactylifera (and later for Rhynchophorus ferrugineus) were obtained from the Global Biodiversity Information Facility (GBIF), a large online database that compiles biodiversity data from various sources, including museums, research institutions, and citizen science initiatives []. GBIF provides information on species distributions, including location, date, and environmental context.
+Occurrence records for *Phoenix dactylifera* (and later for *Rhynchophorus ferrugineus*) were obtained from the Global Biodiversity Information Facility (GBIF), a large online database that compiles biodiversity data from various sources, including museums, research institutions, and citizen science initiatives []. GBIF provides information on species distributions, including location, date, and environmental context.
 
-Before proceeding with the analysis, the raw dataset for Phoenix dactylifera occurrence records must first be processed to ensure it is appropriately structured. 
-Accordingly, the raw data is cleaned and restructured, keeping only the most relevant variables and removing unnecessary columns. The data is then filtered to focus on the geographic region of interest and ocean points are excluded to ensure the analysis focuses on terrestrial occurrences of Phoenix dactylifera.
+Before proceeding with the analysis, the raw dataset for *Phoenix dactylifera* occurrence records must first be processed to ensure it is appropriately structured. 
+Accordingly, the raw data is cleaned and restructured, keeping only the most relevant variables and removing unnecessary columns. The data is then filtered to focus on the geographic region of interest and ocean points are excluded to ensure the analysis focuses on terrestrial occurrences of *Phoenix dactylifera*.
 
 A full breakdown of these data processing steps is implemented in the loading_and_processing.R script, which is sourced in the chunks to ensure proper data handling and preparation for the analysis. 
 ```{r}
 #| label: load-palm-data
-#| description: "Load and process GBIF data for Phoenix dactylifera"
 
 # Source data loading and processing functions
 source(here("functions", "loading_and_processing.R"))
@@ -118,7 +116,6 @@ palm_raw <- load_gbif_data("Phoenix dactylifera")
 ```{r}
 #| label: process-palm-presence-data
 #| message: false
-#| description: "Clean and filter palm presence data"
 
 # Source data loading and processing functions
 source(here("functions", "loading_and_processing.R"))
@@ -151,7 +148,7 @@ palm_distribution_data <- generate_pseudo_absence_data(palm_presence_data, num_p
 saveRDS(palm_distribution_data, here("data", "processed", "palm_distribution_data.rds"))
 ```
 
-To visualise the distribution of Phoenix dactylifera, a map was created using observed occurrences and pseudo-absence points. The plotting functions for generating this map are sourced from the plotting.R script, where all the plotting functions are stored. For further details on the plotting function, please refer to this script.
+To visualise the distribution of *Phoenix dactylifera*, a map was created using observed occurrences and pseudo-absence points. The plotting functions for generating this map are sourced from the plotting.R script, where all the plotting functions are stored. For further details on the plotting function, please refer to this script.
 
 ```{r}
 #| label: plot-palm-distribution
@@ -163,7 +160,7 @@ source(here("functions", "plotting.R"))
 # Create distribution plot
 plot_species_distribution(palm_distribution_data, palm_colour, title = "Distribution of Date Palm")
 ```
-_Figure 1: Map showing the distribution of Date Palm (Phoenix dactylifera) across the study region._
+_Figure 1: Map showing the distribution of date palm across the study region._
 
 Figure 1 shows the geographic distribution of Date Palm within the study region. Purple points represent confirmed presence locations obtained from GBIF occurrence data, while grey points indicate pseudo-absence points. The distribution demonstrates the species' concentration across North Africa, the Middle East, and parts of southern Europe, highlighting its native range and primary ecological zones.
 
@@ -186,7 +183,7 @@ if (file.exists(bioclim_file_path)) {
 }
 ```
 
-The selection of bioclimatic variables for Phoenix dactylifera (Date Palm) was based on previous literature showing that temperature extremes and moisture availability are the most critical factors affecting its distribution []. 
+The selection of bioclimatic variables for *Phoenix dactylifera* was based on previous literature showing that temperature extremes and moisture availability are the most critical factors affecting its distribution []. 
 Specifically, the following variables were chosen:
 
 - BIO5 (Max Temperature of the Warmest Month): Date Palms are sensitive to extreme heat, and this variable is crucial for assessing heat stress during the hottest periods, as noted in previous research.
@@ -197,7 +194,7 @@ Specifically, the following variables were chosen:
 
 - BIO16 (Precipitation of the Wettest Quarter): Chosen due to the species' sensitivity to wet stress, particularly during fruit ripening, which has been emphasized in earlier studies.Variables like BIO5 (Max Temperature of the Warmest Month), BIO6 (Min Temperature of the Coldest Month), BIO14 (Precipitation of the Driest Month), and BIO16 (Precipitation of Wettest Quarter) were chosen because they directly influence the species' survival, with temperature and moisture extremes being key limiting factors.
 
-Although also identified as potentially relevant for predicting Phoenix dactylifera distributions, BIO10 (Mean Temperature of the Warmest Quarter) and BIO12 (Annual Precipitation) were excluded due to high collinearity with BIO5 and BIO16, and their lower relevance for capturing the critical temperature and moisture extremes affecting Date Palm's growth.
+Although also identified as potentially relevant for predicting *Phoenix dactylifera* distributions, BIO10 (Mean Temperature of the Warmest Quarter) and BIO12 (Annual Precipitation) were excluded due to high collinearity with BIO5 and BIO16, and their lower relevance for capturing the critical temperature and moisture extremes affecting Date Palm's growth.
 
 These decisions were guided by preliminary analyses conducted in the choosing_bioclims.R script (under supplementary scripts folder),  which assesses the correlations between selected bioclimatic variables. Please refer to this script for further detail.
 
@@ -220,7 +217,7 @@ saveRDS(palm_model_data, here("data", "processed", "palm_model_data.rds"))
 ```
 
 ### Model Fitting and Evaluation
-The final model for Phoenix dactylifera was selected using AIC and AUC scores, as evaluated through model fitting and cross-validation (following ... recommendation). The process, detailed in the model_testing_script.R, involved fitting multiple Generalized Linear Models (GLMs) with selected bioclimatic variables.
+The final model for *Phoenix dactylifera* was selected using AIC and AUC scores, as evaluated through model fitting and cross-validation (following ... recommendation). The process, detailed in the model_testing_script.R, involved fitting multiple Generalized Linear Models (GLMs) with selected bioclimatic variables.
 
 - AIC-based Model Selection: Models were compared using AIC, and the model with the lowest AIC was selected for its balance between goodness of fit and simplicity.
 
@@ -262,7 +259,7 @@ plot_glm_probability_raster(
 ```
 _Figure 2: Heat map showing the climatic suitability for date palm using the final_palm_model._
 
-This heat map depicts the predicted climatic suitability for Phoenix dactylifera across North Africa, the Middle East, and southern Europe, using a color gradient representing occurrence probability from 0 to 1. Deep purple regions (indicating 75-100% probability) are concentrated in specific areas of North Africa, particularly along the western and northern coastal zones, and in concentrated pockets of the Arabian Peninsula. Yellows and greens (25-50% probability) dominate much of the broader region, including interior North African territories and parts of the Middle East. The plot highlights spatial variations in habitat suitability, with the most favourable conditions appearing in coastal and sub-coastal zones characterised by specific temperature and precipitation regimes. Areas of lowest probability (blue to teal) are evident in the northern Mediterranean regions and higher elevation areas, reflecting the species' sensitivity to temperature and moisture constraints.
+This heat map depicts the predicted climatic suitability for *Phoenix dactylifera* across North Africa, the Middle East, and southern Europe, using a color gradient representing occurrence probability from 0 to 1. Deep purple regions (indicating 75-100% probability) are concentrated in specific areas of North Africa, particularly along the western and northern coastal zones, and in concentrated pockets of the Arabian Peninsula. Yellows and greens (25-50% probability) dominate much of the broader region, including interior North African territories and parts of the Middle East. The plot highlights spatial variations in habitat suitability, with the most favourable conditions appearing in coastal and sub-coastal zones characterised by specific temperature and precipitation regimes. Areas of lowest probability (blue to teal) are evident in the northern Mediterranean regions and higher elevation areas, reflecting the species' sensitivity to temperature and moisture constraints.
 
 
 ```{r}
@@ -283,17 +280,16 @@ _Figure 3: Heat map showing the date palm occurrence probability with presence p
 Figure 3 combines the GLM-predicted climatic suitability with actual presence points for date palm. Notably, the purple presence points strategically cluster in areas of higher predicted probability, demonstrating a strong overall correlation between the model's predictions and actual species distribution. However, the relationship is not perfectly uniform. While most points are concentrated in coastal regions and areas with favourable climatic conditions (yellow to green zones of 50-75% probability), there are notable discrepancies. Some presence points appear in areas of lower predicted suitability, particularly in the northern Mediterranean and transition zones, suggesting that local microclimatic factors or other biotic variables not captured by the model may influence species distribution. Conversely, some high-probability regions (dark blue and purple zones) show fewer presence points, indicating potential habitat suitability that has not yet been fully explored or documented. These variations highlight the limitations of relying solely on broad climatic variables to predict exact species occurrence.
 
 
-## Species 2: Rhynchophorus ferrugineus (Red Palm Weevil)
+## Species 2: *Rhynchophorus ferrugineus* (red palm weevil)
 
 ### Data Preparation
 
-The occurrence records for Rhynchophorus ferrugineus (Red Palm Weevil) were sourced from the Global Biodiversity Information Facility (GBIF), similarly to Phoenix dactylifera. 
+The occurrence records for *Rhynchophorus ferrugineus* were sourced from GBIF, similarly to *Phoenix dactylifera*. 
 
 The same data processing steps were applied to the raw weevil data - including cleaning the data, filtering for the study region, and generating pseudo-absence points - reusing the functions from the loading_and_processing.R script.
 
 ```{r}
 #| label: load-weevil-data
-#| description: "Load and process GBIF data for Rhynchophorus ferrugineus"
 
 # Source data loading and processing functions
 source(here("functions", "loading_and_processing.R"))
@@ -333,7 +329,7 @@ weevil_distribution_data <- generate_pseudo_absence_data(weevil_presence_data, n
 saveRDS(weevil_distribution_data, here("data", "processed", "weevil_distribution_data.rds"))
 ```
 
-Figure 4 was created using observed occurrences and pseudo-absence points to visualise the distribution of Rhynchophorus ferrugineus. 
+Figure 4 was created using observed occurrences and pseudo-absence points to visualise the distribution of *Rhynchophorus ferrugineus*. 
 ```{r}
 #| label: plot-weevil-distribution
 #| description: "Visualize red palm weevil species distribution"
@@ -342,24 +338,24 @@ Figure 4 was created using observed occurrences and pseudo-absence points to vis
 source(here("functions", "plotting.R"))
 
 # Create distribution plot
-plot_species_distribution(weevil_distribution_data, weevil_colour, title = "Distribution of Red Palm Weevil Presence & Pseudo-Absence")
+plot_species_distribution(weevil_distribution_data, weevil_colour, title = "Distribution of red palm weevil Presence & Pseudo-Absence")
 
 ```
-_Figure 4: Map showing the distribution of Red Palm Weevil (Rhynchophorus ferrugineus) across the study region._
+_Figure 4: Map showing the distribution of red palm weevil across the study region._
 
-This map illustrates the spatial distribution of Red Palm Weevil occurrence across North Africa, the Middle East, and southern Europe. Red points represent confirmed presence locations, while grey points indicate pseudo-absence sampling sites. The Red Palm Weevil presence is notably concentrated along the Mediterranean coastal regions, with dense clusters in southern Spain, coastal North Africa (particularly Tunisia and Algeria), and the Levantine coast. The grey pseudo-absence points provide a comprehensive background, highlighting the potential habitat range beyond confirmed occurrence locations. The distribution suggests the weevil's preference for coastal and sub-coastal environments with specific climatic and ecological conditions conducive to its survival and spread.
+This map illustrates the spatial distribution ofred palm weevil occurrence across North Africa, the Middle East, and southern Europe. Red points represent confirmed presence locations, while grey points indicate pseudo-absence sampling sites. Thered palm weevil presence is notably concentrated along the Mediterranean coastal regions, with dense clusters in southern Spain, coastal North Africa (particularly Tunisia and Algeria), and the Levantine coast. The grey pseudo-absence points provide a comprehensive background, highlighting the potential habitat range beyond confirmed occurrence locations. The distribution suggests the weevil's preference for coastal and sub-coastal environments with specific climatic and ecological conditions conducive to its survival and spread.
 
 ### Bioclimatic Variable Selection
 
-To select the appropriate bioclimatic variables for Rhynchophorus ferrugineus a brief reviw of prior research was done, which highlighted the importance of temperature extremes and moisture availability as key environmental factors influencing its habitat suitability [].
+To select the appropriate bioclimatic variables for *Rhynchophorus ferrugineus* a brief review of prior research was done, which highlighted the importance of temperature extremes and moisture availability as key environmental factors influencing its habitat suitability [].
 
 The following variables were selected for modeling the species' distribution:
 
 -BIO2 (Mean Diurnal Temperature Range): This variable was chosen to reflect the weevil’s tolerance for temperature fluctuations, which is vital for its survival in warm climates, where high heat is prevalent.
 
--BIO6 (Min Temperature of the Coldest Month): This variable is critical as the Red Palm Weevil is highly sensitive to cold temperatures, which restricts its ability to expand into cooler regions. It plays a significant role in understanding the species' capacity to overwinter in colder environments.
+-BIO6 (Min Temperature of the Coldest Month): This variable is critical as the red palm weevil is highly sensitive to cold temperatures, which restricts its ability to expand into cooler regions. It plays a significant role in understanding the species' capacity to overwinter in colder environments.
 
--BIO16 (Precipitation of the Wettest Quarter): The Red Palm Weevil's sensitivity to excessive moisture during the wettest part of the year makes this variable important, particularly as wet conditions can negatively impact its survival during the reproductive phase.
+-BIO16 (Precipitation of the Wettest Quarter): The red palm weevil's sensitivity to excessive moisture during the wettest part of the year makes this variable important, particularly as wet conditions can negatively impact its survival during the reproductive phase.
 
 -BIO17 (Precipitation of the Driest Quarter): Given the species’ preference for warm, humid environments, this variable captures the effect of dry periods that may limit its expansion into arid regions.
 
@@ -394,14 +390,15 @@ final_weevil_model <- glm(presence ~ bio2 + bio16 + bio17,
 # Print model summary
 summary(final_weevil_model)
 ```
-_Weevil Model Summary: GLM for red palm weevil distribution _
+_Weevil model summary: GLM for red palm weevil distribution _
 
-The Red Palm Weevil distribution model reveals two highly significant predictors with strong negative effects: temperature seasonality (bio2) and precipitation of the wettest quarter (bio16). The dramatic negative coefficient for temperature seasonality suggests the weevil is extremely sensitive to temperature fluctuations, while wet quarter precipitation also negatively impacts occurrence probability. Interestingly, precipitation of the driest quarter (bio17) shows no significant effect. 
+The red palm weevil distribution model reveals two highly significant predictors with strong negative effects: temperature seasonality (bio2) and precipitation of the wettest quarter (bio16). The dramatic negative coefficient for temperature seasonality suggests the weevil is extremely sensitive to temperature fluctuations, while wet quarter precipitation also negatively impacts occurrence probability. Interestingly, precipitation of the driest quarter (bio17) shows no significant effect. 
 
-This GLM model was used to predict the climatic suitability of Date Palm across the study region. The output is plotted on Figure 5 and Figure 6.
+This GLM model was used to predict the climatic suitability of date palm across the study region. The output is plotted on Figure 5 and Figure 6.
 
-### Model Prediction and Visualization
-The Red Palm Weevil's climatic suitability was predicted using the final GLM model and visualised on a map, showing high suitability in areas of the Middle East and North Africa.
+### Model Prediction and Visualisation
+
+The red palm weevil's climatic suitability was predicted using the final GLM model and visualised on a map, showing high suitability in areas of the Middle East and North Africa.
 ```{r}
 #| label: plot-weevil-glm-probability-no-points
 #| description: "Visualize GLM probability of weevil occurrence without points"
@@ -419,7 +416,7 @@ plot_glm_probability_raster(
 ```
 _Figure 5: Heat map showing the climatic suitability for red palm weevil using the final_palm_model._
 
-Figure 5 illustrates the predicted climatic suitability for Rhynchophorus ferrugineus across North Africa, the Middle East, and southern Europe. It reveals a more restricted potential distribution compared to the Date Palm, with highest suitability strongly linked to coastal and Mediterranean climate regions. Areas of moderate to high probability are most evident in southern Spain, coastal North Africa, the Levantine coast, and parts of the Arabian Peninsula, reflecting the weevil's sensitivity to specific temperature and precipitation regimes. 
+Figure 5 illustrates the predicted climatic suitability for *Rhynchophorus ferrugineus* across North Africa, the Middle East, and southern Europe. It reveals a more restricted potential distribution compared to the date palm, with highest suitability strongly linked to coastal and Mediterranean climate regions. Areas of moderate to high probability are most evident in southern Spain, coastal North Africa, the Levantine coast, and parts of the Arabian Peninsula, reflecting the weevil's sensitivity to specific temperature and precipitation regimes. 
 
 ```{r}
 #| label: plot-weevil-glm-probability-with-points
@@ -437,13 +434,13 @@ plot_probability_raster_and_presence(
 ```
 _Figure 6: Heat map showing the red palm weevil occurrence probability with presence points._
 
-This heat map integrates the GLM-predicted climatic suitability with actual presence points for the Red Palm Weevil. The red presence points seem to cluster in areas of higher predicted probability, primarily along the Mediterranean coastal regions. While most points align with yellow and green zones of moderate to high suitability (50-75% probability), there are notable discrepancies. Some presence points appear in areas of lower predicted probability, particularly in the northern Mediterranean transition zones, suggesting that local abiotic conditions or other unaccounted  variables influence species distribution. Conversely, some high-probability regions show fewer presence points, indicating potential habitat suitability not yet fully documented.
+This heat map integrates the GLM-predicted climatic suitability with actual presence points for the red palm weevil. The red presence points seem to cluster in areas of higher predicted probability, primarily along the Mediterranean coastal regions. While most points align with yellow and green zones of moderate to high suitability (50-75% probability), there are notable discrepancies. Some presence points appear in areas of lower predicted probability, particularly in the northern Mediterranean transition zones, suggesting that local abiotic conditions or other unaccounted  variables influence species distribution. Conversely, some high-probability regions show fewer presence points, indicating potential habitat suitability not yet fully documented.
 
-##  Question 3: Species Overlap Analysis
+##  Question 3: Distribution Overlap
 
 ### Data Preparation
 
-To determine the potential geographic regions where the two species may interact, a 10 km buffer was created around all confirmed presence records of Phoenix dactylifera. The buffer represents a potential interaction zone, where both species could be present. The overlap between the Red Palm Weevil and Date Palm occurrence zones was calculated by identifying the spatial intersection between the buffered Date Palm zone and the Red Palm Weevil presence data.
+To determine the potential geographic regions where the two species may interact, a 10 km buffer was created around all confirmed presence records of *Phoenix dactylifera*. The buffer represents a potential interaction zone, where both species could be present. The overlap between the red palm weevil and date palm occurrence zones was calculated by identifying the spatial intersection between the buffered date palm zone and the red palm weevil presence data.
 
 To process the spatial data, the presence records of both species were converted into simple feature (sf) objects, which allow for easy manipulation of geographic coordinates. The coordinates for both species' presence data were projected into a metric coordinate reference system (CRS) (EPSG: 3857) to allow for accurate distance and area calculations.
 
@@ -469,7 +466,7 @@ weevil_overlap <- st_intersection(weevil_proj, palm_buffer)
 
 ```
 
-To illustrate the spatial overlap between Date Palm and Red Palm Weevil distributions, a plot was created showing the presence points of both species, along with the overlapping areas. The plot highlights where the Red Palm Weevil occurrence points intersect with the Date Palm buffer zone, providing a representation of their potential co-occurrence.
+To illustrate the spatial overlap between date palm and red palm weevil distributions, a plot was created showing the presence points of both species, along with the overlapping areas. The plot highlights where the red palm weevil occurrence points intersect with the date palm buffer zone, providing a representation of their potential co-occurrence.
 ```{r}
 #| label: plot-species-overlap
 #| description: "Visualize spatial overlap between palm and weevil distributions"
@@ -485,67 +482,58 @@ plot_species_overlap_points(
 )
 
 ```
-_Figure 5: Spatial co-occurrence of Date Palm and Red Palm Weevil._
+_Figure 5: Spatial co-occurrence of date palm and red palm weevil._
 
-This overlap map illustrates the spatial overlap between the distribution of date palm and red palm weevil across North Africa, the Middle East, and southern Europe. Purple points represent confirmed Date Palm presence locations, while red points correspond to Red Palm Weevil presence sites. Green points indicate the overlap between the two species, showing areas where both species occur within close proximity. As shown, the majority of overlap occurs in coastal and sub-coastal regions, particularly in parts of North Africa and the Middle East, where both species are likely to thrive. These areas are characterised by the appropriate climatic conditions for both species. The distribution of overlapping points suggests potential areas of increased risk for date palm cultivation, as these regions are more susceptible to red palm weevil infestations.
+This overlap map illustrates the spatial overlap between the distribution of date palm and red palm weevil across North Africa, the Middle East, and southern Europe. Purple points represent confirmed date palm presence locations, while red points correspond to red palm weevil presence sites. Green points indicate the overlap between the two species, showing areas where both species occur within close proximity. As shown, the majority of overlap occurs in coastal and sub-coastal regions, particularly in parts of North Africa and the Middle East, where both species are likely to thrive. These areas are characterised by the appropriate climatic conditions for both species. The distribution of overlapping points suggests potential areas of increased risk for date palm cultivation, as these regions are more susceptible to red palm weevil infestations.
 
-...The map also indicates areas where the weevil species occurs outside the palm buffer zone (red points outside the green area), which could signify the weevil's spread into regions where palms are not yet established. The overlap areas highlight potential ecological interactions between the two species, which could have implications for pest management strategies in these regions.
+The map also indicates areas where the weevil species occurs outside the palm buffer zone (red points outside the green area), which could signify the weevil's spread into regions where palms are not yet established. This may point to the weevil's capacity for range expansion, potentially ahead of its primary host, which is important for early detection and control. The overlap areas highlight potential ecological interactions between the two species and underscore the importance of integrated pest management, whereby monitoring efforts should prioritise these high-risk zones, where the co-occurrence of the host and pest species could lead to greater ecological and agricultural impact.
 
 ```{r}
 #| label: calculate-overlap-percentage
-#| description: "Calculate the percentage of weevil points within the palm buffer"
 
+#...
 overlap_percentage <- mean(
   rowSums(st_within(weevil_proj, palm_buffer, sparse = FALSE)) > 0
 ) * 100
-
+# ...
 print(overlap_percentage)
 
 ```
-The calculated overlap percentage of 28.8% indicates that approximately 28.8% of the red palm weevil presence records fall within the 10 km buffer around the Date Palm occurrence points. This relatively low overlap suggests that while there is some spatial co-occurrence between the two species, a substantial portion of the Red Palm Weevil's distribution lies outside the immediate range of Date Palms. This low overlap may reflect several factors, such as sampling biases, spatial barriers, or ecological constraints that prevent the two species from being more widely distributed together in the study region. It may also indicate that the Red Palm Weevil is capable of spreading into areas not yet inhabited by Date Palms, possibly due to dispersal dynamics or habitat suitability in regions outside the palms' natural range. The overlap percentage is useful for understanding the potential areas at risk for pest infestations in Date Palm regions. However, given the low overlap, further monitoring and analysis are needed to assess how the weevil might invade or affect Date Palm populations over time, particularly in regions where the two species do not yet occur together.
+The calculated overlap percentage of 28.8% indicates that approximately 28.8% of the red palm weevil presence records fall within the 10 km buffer around the date palm occurrence points. This relatively low overlap suggests that while there is some spatial co-occurrence between the two species, a substantial portion of the red palm weevil's distribution lies outside the immediate range of date palms. This low overlap may reflect several factors, such as sampling biases, spatial barriers, or ecological constraints that prevent the two species from being more widely distributed together in the study region. It may also indicate that the red palm weevil is capable of spreading into areas not yet inhabited by date palms, possibly due to dispersal dynamics or habitat suitability in regions outside the palms' natural range. The overlap percentage is useful for understanding the potential areas at risk for pest infestations in date palm regions. However, given the low overlap, further monitoring and analysis are needed to assess how the weevil might invade or affect date palm populations over time, particularly in regions where the two species do not yet occur together.
 
-## Question 4
+## Question 4: Interspecies Distribution Dependence
 
-In this section, we examine whether the distribution of Phoenix dactylifera (Date Palm) is influenced by the presence of Rhynchophorus ferrugineus (Red Palm Weevil), while accounting for climatic variables. Specifically, we build a Generalised Linear Model (GLM) with palm presence as the response variable, considering both biotic factors (weevil presence) and environmental predictors (bioclimatic variables).
+This section investigates the potential influence of *Rhynchophorus ferrugineus* presence on the distribution of *Phoenix dactylifera*, while controlling for key climatic variables. A Generalised Linear Model (GLM) was constructed with palm presence as the response variable, incorporating both biotic (weevil presence) and abiotic (bioclimatic) predictors to evaluate their relative contributions.
 
-First, a 10 km buffer around each date palm occurrence point to investigate whether red palm weevil presence occurs near date palms. 
+To assess spatial proximity between the two species, a 10 km buffer was applied around each recorded occurrence of *P. dactylifera*, allowing for the identification of *R. ferrugineus* locations falling within this range.
 
 ```{r}
-# Convert Date Palm presence data to spatial format
+# Convert date palm presence data to spatial format
 palm_sf <- st_as_sf(palm_model_data, coords = c("lon", "lat"), crs = 4326) %>%
   st_transform(crs = st_crs(weevil_overlap))
 
-# Create a 10 km buffer around Date Palm presence points
+# Create a 10 km buffer around date palm presence points
 palm_buffer <- st_buffer(palm_sf, dist = 10000)  # 10 km buffer
 
 ```
 
-Then the checked if the Red Palm Weevil presence occurred within the buffer zone surrounding the Date Palm presence points. We added a new variable, weevil_overlap, to the Date Palm dataset, which indicates whether each palm point is within the weevil presence zone.
+Then the checked if the red palm weevil presence occurred within the buffer zone surrounding the date palm presence points. We added a new variable, weevil_overlap, to the date palm dataset, which indicates whether each palm point is within the weevil presence zone.
 
 ```{r}
-# Convert Red Palm Weevil presence data to spatial format
+# Convert red palm weevil presence data to spatial format
 weevil_sf <- st_as_sf(weevil_presence_data, coords = c("lon", "lat"), crs = 4326)
 
 # Transform to the same CRS as palm data for spatial operations
 weevil_proj <- st_transform(weevil_sf, crs = 3857)
 
-# Check if Red Palm Weevil occurs within the palm buffer
+# Check if any weevil points fall within each palm buffer
 palm_model_data$weevil_overlap <- as.integer(
-  lengths(st_intersects(palm_sf, palm_buffer)) > 0
+  lengths(st_intersects(palm_buffer, weevil_proj)) > 0
 )
-
-# Create a binary overlap indicator
-palm_model_data$weevil_overlap <- as.integer(lengths(st_intersects(palm_sf, palm_buffer)) > 0)
-
-# Verify the new binary overlap
-print(table(palm_model_data$weevil_overlap))
-
-# Convert to factor
-palm_model_data$weevil_overlap <- factor(palm_model_data$weevil_overlap)
 
 ```
 
-Then fit a Generalised Linear Model (GLM) to assess whether the presence of Red Palm Weevil within a 10 km buffer affects the distribution of Date Palm, while also accounting for climatic variables (BIO5, BIO6, BIO14, BIO16).
+Subsequently, the analysis evaluated whether occurrences of R. ferrugineus fell within the 10 km buffer zones surrounding P. dactylifera presence points. A new binary variable, weevil_overlap, was added to the date palm dataset to indicate whether each palm location was associated with the presence of the weevil within the defined spatial threshold.
 
 ```{r}
 # Fit the GLM with weevil overlap as a predictor
@@ -559,21 +547,17 @@ glm_biotic_dependence <- glm(
 summary(glm_biotic_dependence)
 
 ```
-_..._
+_Palm with weevil model summary: GLM for palm distribution, including ...._
 
-The Date Palm distribution model shows that temperature and precipitation are key factors influencing its presence. BIO5 (Max Temperature of the Warmest Month) has a negative effect on palm occurrence, indicating sensitivity to heat. BIO6 (Min Temperature of the Coldest Month) positively influences palm survival, reflecting its tolerance to milder winters. BIO14 (Precipitation of the Driest Month) negatively impacts palm presence, highlighting the species' need for water availability. BIO16 (Precipitation of the Wettest Quarter) also shows a small negative effect.
-
-The Weevil Overlap variable is significantly positive, suggesting that palm presence is more likely where Red Palm Weevil is found, likely due to shared environmental conditions.
-
-The model is statistically strong, with all variables being highly significant (p < 0.001). The AIC of 1593.9 and the improvement in deviance indicate a good fit, with climatic variables playing the dominant role in shaping the Date Palm's distribution.
+As previously discussed in the Palm Model Summary, the GLM for date palm distribution shows that occurrence probability declines with rising maximum temperatures (BIO5) and decreasing precipitation (BIO14, BIO16), while increasing slightly with warmer winter conditions (BIO6). These results reinforce the ecological sensitivity of *Phoenix dactylifera* to both temperature extremes and water availability across its range. In this case, the inclusion of the weevil_overlap variable, which significantly improves model fit (substantial drop in AIC from 1798.6 to 1593.9), introduces a potential biotic factor influencing distribution. The positive relationship between date palm presence and areas where red palm weevils are found may not reflect direct causality but instead indicates overlapping ecological niches. Both species likely favour similar warm, moderately arid conditions — suggesting that the weevil may serve as an indirect indicator of suitable palm habitat. Alternatively, it could imply that once palms establish, they facilitate colonisation by the weevil, hinting at a host-pest dynamic that emerges under favourable environmental conditions.
 
 
-## Question 5
+## Question 5: Future Distribution Prediction
 
 ### Load Future Climate Projections
-To predict how future climate changes may affect the distribution of Phoenix dactylifera (Date Palm) and Rhynchophorus ferrugineus (Red Palm Weevil), we used CMIP6 climate projections for the period 2061–2080, selecting the CanESM5 model and SSP2-4.5 scenario. This model provides future bioclimatic data that helps to estimate changes in temperature, precipitation, and other climate factors affecting the species' habitats.
+To assess the potential impacts of future climate change on the distributions of *Phoenix dactylifera* and *Rhynchophorus ferrugineus*, climate projections from the Coupled Model Intercomparison Project Phase 6 (CMIP6) were utilised for the period 2061–2080. The CanESM5 general circulation model was selected under the SSP2-4.5 emissions scenario, providing projected bioclimatic variables relevant to temperature, precipitation, and other climatic conditions influencing species habitats.
 
-The relevant bioclimatic data was either loaded from an existing file or downloaded and cropped to fit the study region.
+The required bioclimatic data were obtained either by loading pre-existing datasets or by downloading and processing raw climate layers, which were subsequently cropped to the spatial extent of the study region.
 
 ```{r}
 
@@ -603,9 +587,12 @@ if (file.exists(future_bioclim_file)) {
 
 ```
 
-Using the future climate projections, we predicted the future suitability of the Date Palm species in the study region. The model used for prediction is based on the Generalized Linear Model (GLM) built with current bioclimatic variables.
 
-The output of the prediction provides the estimated occurrence probabilities for Date Palm under future climatic conditions.
+### Future Palm Distribution
+
+Using the projected future climate data, the potential future suitability of *Phoenix dactylifera* within the study region was modelled. Predictions were generated using the previously constructed Generalised Linear Model (GLM), which was originally trained on current bioclimatic variables.
+
+The resulting output provides spatially explicit estimates of occurrence probability for *P. dactylifera* under anticipated future climatic conditions, offering insight into potential shifts in suitable habitat driven by climate change.
 
 ```{r}
 
@@ -632,14 +619,16 @@ plot_glm_probability_raster(
 )
 
 ```
-The map generated (Figure 1) illustrates the predicted distribution of Date Palm in the period 2061–2080, with areas of higher suitability marked by darker colours, indicating regions where Date Palm is expected to thrive under future climate conditions.
+_Figure 7: Heat map showing the projected date palm occurrence probability (2061-2080)._
+As shown in Figure 7, the projected date palm occurrence probability map for 2061-2080 illustrates the species' potential future distribution across North Africa, the Middle East, and southern Europe. Transitioning from deep purple to bright yellow, the visualization reveals nuanced shifts in habitat suitability. Bright yellow zones indicate high probability areas, particularly in the Southern Arabian Peninsula, Nile Delta, and North African coastal regions, suggesting ecological resilience. Green intermediate zones span Central Africa and the Middle East, representing moderate occurrence potential. Deep purple regions, including the central Sahara and higher latitude areas, signal significantly reduced habitat suitability. This map fundamentally captures the date palm's potential adaptive response to anticipated climate changes, highlighting the species' dynamic ecological potential across complex geographical landscapes.
 
-Step 3: Predict Future Distribution of Red Palm Weevil
-Similarly, we predicted the future distribution of the Red Palm Weevil based on the future climate projections and the GLM built for the weevil. The future suitability for the Red Palm Weevil was calculated using the same procedure as for Date Palm.
-Step 3: Predict Future Distribution of Red Palm Weevil
+### Future Red Palm Weevil Distribution
+
+The future distribution of *Rhynchophorus ferrugineus* was projected using the same CMIP6 climate projections and modelling approach applied to *Phoenix dactylifera*. A Generalised Linear Model (GLM), previously developed using current bioclimatic variables, was used to estimate the future habitat suitability for the species. The prediction procedure mirrored that of the date palm model, generating occurrence probabilities for R. ferrugineus under projected climatic conditions for the 2061–2080 period.
+
 ```{r}
 ## ---------------------------
-# Step 3: Predict Future Distribution of Red Palm Weevil ----
+# Step 3: Predict Future Distribution of red palm weevil ----
 
 # Predict future suitability based on final model
 weevil_prediction_future <- predict(
@@ -661,12 +650,16 @@ plot_glm_probability_raster(
 )
 
 ```
-The output (Figure 2) represents the areas with the highest suitability for Red Palm Weevil under future climatic conditions. This allows us to assess potential overlap with areas predicted to be suitable for Date Palm, highlighting the potential for increased pest pressure in certain regions.
+_Figure 8: Heat map showing the projected red palm weevil occurrence probability (2061-2080)._
 
-Step 4: Quantifying Range Changes
-Next, we converted the predicted suitability raster data into binary values, where 1 indicates suitable habitat (i.e., where species could potentially exist) and 0 indicates unsuitable habitat. We then converted these binary rasters into point geometries to calculate changes in species' ranges.
+The red palm weevil occurrence probability map for 2061-2080 reveals a nuanced spatial distribution across North Africa, the Middle East, and southern Europe. Deep purple zones of high probability concentrate in North African coastal regions and parts of the Arabian Peninsula, while yellow and green intermediate zones extensively cover interior territories. The visualization highlights potential weevil expansion, with lowest probabilities in northern Mediterranean and high-elevation areas, suggesting complex ecological constraints and climate-driven migration patterns.
 
-For Date Palm and Red Palm Weevil, we calculated the areas that are predicted to remain suitable (or suitable under future conditions) by converting the binary raster data into points and creating buffers around these points.
+### Quantifying Range Changes
+
+To evaluate changes in the geographic range of each species, predicted suitability rasters were first converted into binary format, where a value of 1 indicates suitable habitat and 0 indicates unsuitable habitat. This thresholding step identifies areas where the species is predicted to potentially occur under current or future climatic conditions.
+
+The binary rasters were then transformed into spatial point geometries to enable spatial analysis. For both Phoenix dactylifera and Rhynchophorus ferrugineus, these points were used to quantify the extent of suitable habitat. Buffer zones were created around each point to approximate continuous areas of suitability, allowing for the comparison of range size and distribution under current versus projected future conditions.
+
 ```{r}
 #| label: prepare-future-buffered-points
 #| description: "Threshold predictions, convert to sf points, project and buffer palm range"
@@ -706,9 +699,7 @@ palm_future_buffer <- st_buffer(palm_future_proj, dist = 10000)
 
 ```
 
-
-Step 5: Percentage Change in Species Range
-Finally, we calculated the percentage change in the spatial overlap between Date Palm and Red Palm Weevil from the present to future conditions. The percentage change was determined by comparing the number of weevil presence points within a 10 km buffer around the future suitable Date Palm habitat with the current overlap.
+To assess potential shifts in biotic interactions under future climate scenarios, the percentage change in spatial overlap between date palm and red palm weevil was calculated. This was achieved by comparing the number of red palm weevil presence points falling within a 10 km buffer of future suitable date palm habitat to the number of overlapping points under current conditions. The resulting percentage reflects the relative change in co-occurrence zones, providing an estimate of how climate change may influence the spatial dynamics between the species.
 
 ```{r}
 #| label: calculate-overlap-percent-change
@@ -731,10 +722,12 @@ overlap_change_percent <- ((sum(future_in_buffer) - sum(weevils_in_buffer)) / su
 print(overlap_change_percent)
 
 ```
-The results showed that the proportion of weevil presence points falling within the palm buffer zone is expected to increase in the future. This suggests that Red Palm Weevil is likely to expand its range into regions with suitable Date Palm habitats under future climate conditions.
+The analysis revealed a substantial projected increase—approximately 3625%—in the spatial overlap between *Phoenix dactylifera* and *Rhynchophorus ferrugineus* under future climate conditions. This suggests a marked expansion of areas where both species may co-occur, potentially heightening the risk of pest impact on date palm populations in newly suitable regions. However, this prediction should be interpreted with caution. The projected overlap is based solely on climatic suitability and assumes that both species can fully disperse into all climatically suitable areas. In reality, biological, ecological, and anthropogenic constraints—such as dispersal limitations, land use change, or pest control measures—may restrict such extensive range expansion. Additionally, the use of buffer-based spatial proximity as a proxy for biotic interaction simplifies complex ecological dynamics. Despite these limitations, the result highlights areas that may warrant increased surveillance and risk assessment under future climate scenarios.
 
 ## Conclusion
-The projected distribution of Date Palm under future climate conditions indicates a slight contraction in suitable habitat, whereas the Red Palm Weevil is expected to either maintain or expand its range. As a result, the overlap between the two species is expected to increase, with a higher proportion of weevil presences occurring within 10 km of suitable Date Palm habitat.
+Future climate projections suggest a modest contraction in suitable habitat for *Phoenix dactylifera*, while *Rhynchophorus ferrugineus* is expected to maintain or expand its range. As a result, the spatial overlap between the two species is projected to increase, with a higher proportion of weevil occurrences falling within close proximity to areas suitable for date palm cultivation. This implies a potential intensification of host–pest interactions under future climate conditions, highlighting the need for proactive monitoring and pest management strategies in vulnerable regions.
 
-These findings suggest that, under future climate scenarios, host-pest interactions between Phoenix dactylifera and Rhynchophorus ferrugineus could intensify. Increased co-occurrence may exacerbate the risk of pest outbreaks in regions suitable for Date Palm cultivation, emphasizing the need for proactive pest management strategies as climate conditions change.
+However, several limitations should be considered when interpreting these findings. The analysis assumes unrestricted dispersal of both species into newly suitable areas, which may not reflect real-world ecological or anthropogenic barriers. Additionally, the use of climate variables alone does not capture the full complexity of species distributions, which are also influenced by land use, biotic interactions, and human intervention. The spatial overlap based on buffer zones provides a simplified approximation of interaction potential and may overestimate actual risk. Despite these constraints, the findings offer a useful first step in identifying regions that could experience increased pest pressure in the context of climate change.
+
+## References
 
