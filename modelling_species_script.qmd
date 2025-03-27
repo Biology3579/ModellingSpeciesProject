@@ -1,0 +1,617 @@
+---
+title: "Modelling Species Distributions"
+author: "Biology3579"
+date: 2025-02-26
+format: html
+execute:
+  warning: false
+  message: false
+editor: visual
+---
+
+## Set-up
+
+Important note: Comprehensive instructions, including all prerequisites and detailed guidelines for running this analysis and relevant code, are available in the README file of my GitHub repository for this project. Please refer to the README to ensure proper setup and usage.
+
+First of all I set up ...
+
+```{r}
+#| label: setup-renv
+#| warning: false
+#| message: false
+
+# Restore the exact package versions used when the script was created
+# This ensures that the same set-up is used as when the code was originally developed
+renv::restore()
+```
+
+```{r}
+#| label: load-libraries
+#| warning: false
+#| message: false
+
+# Source the library loading function from the libraries file
+# Detailed description of each library and its use can be found in the sourced file
+source(here::here("functions", "libraries.R"))
+
+# Load necessary libraries using the custom function
+load_libraries()
+```
+
+```{r}
+#| label: create-project-structure
+#| include: false
+
+
+# Create required directories for organized data and output storage
+# This ensures a consistent project structure
+sapply(c("data/raw", "data/processed", "output"), function(dir) {
+    dir_path <- here(dir)
+    if (!dir.exists(dir_path)) dir.create(dir_path, recursive = TRUE)
+})
+
+```
+
+
+## Introduction
+(Add a comprehensive introduction explaining the importance of species distribution modeling and the specific objectives of this research...)
+
+
+### Study Region
+Explanation of the selected study region and rationale for the chosen geographic extent.
+
+```{r}
+#| label: define-study-region
+#| description: "Define the study extent and create a buffered region"
+
+# Define study extent explicitly (longitude: -20 to 60, latitude: -5 to 45)
+study_region <- ext(-20, 60, -5, 45)
+
+# Create a 5-degree buffered region for broader analysis
+buffered_region <- extend(study_region, 5)
+```
+
+```{r}
+#| label: prepare-world-map
+#| description: "Load global land shapefile and create a study area mask"
+
+# Load global land shapefile for reference
+world_map <- world(path = ".")
+
+# Convert widened study region to raster for masking
+study_area_mask <- terra::rasterize(world_map, rast(buffered_region))
+```
+
+## Question 1: 
+...
+
+### Preparing data ...
+
+...
+```{r}
+#| label: load-palm-data
+#| description: "Load and process GBIF data for Phoenix dactylifera"
+
+# Source data loading and processing functions
+source(here("functions", "loading_and_processing.R"))
+
+# Load raw GBIF data for date palm
+palm_raw <- load_gbif_data("Phoenix dactylifera")
+```
+
+```{r}
+#| label: process-palm-presence-data
+#| message: false
+#| description: "Clean and filter palm presence data"
+
+# Source data loading and processing functions
+source(here("functions", "loading_and_processing.R"))
+
+# Create presence data for date palm
+palm_presence_data <- palm_raw %>%
+  clean_species_data() %>%    # Remove duplicates and missing values
+  filter_coords() %>%    # Filter coordinates to study region
+  get_mainland_points()  # Remove ocean points
+
+# Save processed presence data
+saveRDS(palm_presence_data, here("data", "processed", "palm_presence_data.rds"))
+
+```
+
+```{r}
+#| label: generate-palm-distribution-data
+#| message: false
+#| description: "Create distribution dataset with pseudo-absence points"
+
+# Source data loading and processing functions
+source(here("functions", "loading_and_processing.R"))
+
+# Generate distribution data with pseudo-absence points
+palm_distribution_data <- generate_pseudo_absence_data(palm_presence_data, num_points = 500)
+
+# Save full distribution dataset
+saveRDS(palm_distribution_data, here("data", "processed", "palm_distribution_data.rds"))
+```
+
+```{r}
+#| label: plot-palm-distribution
+#| description: "Visualize date palm species distribution"
+
+# Source plotting functions
+source(here("functions", "plotting.R"))
+
+# Create distribution plot
+plot_species_distribution(palm_distribution_data, palm_colour, title = "Distribution of Date Palm")
+```
+_Figure 1: ..._
+
+### Bioclimatic ...
+...
+
+```{r}
+#| label: prepare-bioclim-data
+#| description: "Download or load bioclimatic raster data"
+
+# Define file path for bioclimatic data
+bioclim_file_path <- here("data", "raw", "climate", "wc10.tif")
+
+# Load existing raster or download and crop bioclimatic data
+if (file.exists(bioclim_file_path)) {
+  bioclim_data <- rast(bioclim_file_path)  # Load existing raster
+} else {
+  # Download, crop, and save bioclimatic data if not available
+  bioclim_data <- crop(worldclim_global(var = "bio", res = 10, path = here("data", "raw", "climate")), buffered_region)
+  writeRaster(bioclim_data, bioclim_file_path, overwrite = TRUE)
+}
+```
+
+
+selecting biocliamtic ...
+
+```{r}
+#| label: select-palm-bioclims
+#| description: "Extract and prepare bioclimatic variables for palm species"
+
+# Source processing functions
+source(here("functions", "loading_and_processing.R"))
+
+# Select and extract relevant bioclimatic variables
+palm_model_data <- selected_bioclims(palm_distribution_data, 
+  selected_bioclims = c("bio5", "bio6", "bio14", "bio16")
+)
+
+# Save processed dataset
+saveRDS(palm_model_data, here("data", "processed", "palm_model_data.rds"))
+
+```
+
+
+```{r}
+#| label: fit-palm-glm
+#| description: "Fit generalized linear model for palm species distribution"
+
+# Fit final GLM model with selected bioclimatic variables
+final_palm_model <- glm(presence ~ bio5 + bio6 + bio14 + bio16,
+    family = binomial(link = "logit"), data = palm_model_data)
+
+# Print model summary
+summary(final_palm_model)
+```
+describe ...
+
+```{r}
+#| label: plot-palm-glm-probability-no-points
+#| description: "Visualize GLM probability of palm occurrence without points"
+
+# Source plotting functions
+source(here("functions", "plotting.R"))
+
+# Create probability plot without points
+plot_glm_probability_raster(
+  final_glm_model = final_palm_model,
+  climate_data = bioclim_data,
+  buffered_region = buffered_region,
+  title = "GLM Probability of Palm Occurrence (Present)"
+)
+```
+
+
+```{r}
+#| label: plot-palm-glm-probability-with-points
+#| description: "Visualize GLM probability of palm occurrence with presence points"
+
+# Create probability plot with presence points
+plot_probability_raster_and_presence(
+  palm_presence_data, 
+  final_glm_model = final_palm_model, 
+  buffered_region = buffered_region,
+  species_colour = palm_colour, 
+  title = "GLM Predicted Probability of Palm Occurrence"
+)
+```
+
+descirbe...
+Add discussion and interpretation of the palm distribution model results
+
+
+## Species 2: Red Palm Weevil 
+brief descriotion of the species and why its is relavant to thsi analysis
+
+### Data Preparation
+...
+
+
+```{r}
+#| label: load-weevil-data
+#| description: "Load and process GBIF data for Rhynchophorus ferrugineus"
+
+# Source data loading and processing functions
+source(here("functions", "loading_and_processing.R"))
+
+# Load raw GBIF data for red palm weevil
+weevil_raw <- load_gbif_data("Rhynchophorus ferrugineus")
+```
+
+```{r}
+#| label: process-weevil-presence-data
+#| message: false
+
+# Source data loading and processing functions
+source(here("functions", "loading_and_processing.R"))
+
+# Create presence data for red palm weevil
+weevil_presence_data <- weevil_raw %>%
+  clean_species_data() %>%       # Remove duplicates and missing values
+  filter_coords() %>%            # Filter coordinates to study region
+  get_mainland_points()          # Remove ocean points
+
+# Save processed presence data
+saveRDS(weevil_presence_data, here("data", "processed", "weevil_presence_data.rds"))
+```
+
+```{r}
+#| label: generate-weevil-distribution-data
+#| message: false
+
+# Source data loading and processing functions
+source(here("functions", "loading_and_processing.R"))
+
+# Generate distribution data with pseudo-absence points
+weevil_distribution_data <- generate_pseudo_absence_data(weevil_presence_data, num_points = 500)
+
+# Save full distribution dataset
+saveRDS(weevil_distribution_data, here("data", "processed", "weevil_distribution_data.rds"))
+```
+
+```{r}
+#| label: plot-weevil-distribution
+#| description: "Visualize red palm weevil species distribution"
+
+# Source plotting functions
+source(here("functions", "plotting.R"))
+
+# Create distribution plot
+plot_species_distribution(weevil_distribution_data, weevil_colour, title = "Distribution of Red Palm Weevil Presence & Pseudo-Absence")
+
+```
+## GLM Model for Weevil Distribution
+
+```{r}
+#| label: select-weevil-bioclims
+#| description: "Extract and prepare bioclimatic variables for weevil species"
+
+# Process data for selected bioclimatic variables
+weevil_model_data <- selected_bioclims(weevil_distribution_data, 
+  selected_bioclims = c("bio2", "bio6", "bio16", "bio17")
+)
+
+# Save processed dataset
+saveRDS(weevil_model_data, here("data", "processed", "weevil_model_data.rds"))
+```
+
+
+```{r}
+#| label: fit-weevil-glm
+#| description: "Fit generalized linear model for weevil species distribution"
+
+# Fit final GLM model with selected bioclimatic variables
+final_weevil_model <- glm(presence ~ bio2 + bio16 + bio17,
+    family = binomial(link = "logit"), data = weevil_model_data)
+
+# Print model summary
+summary(final_weevil_model)
+```
+
+```{r}
+#| label: plot-weevil-glm-probability-no-points
+#| description: "Visualize GLM probability of weevil occurrence without points"
+
+# Source plotting functions
+source(here("functions", "plotting.R"))
+
+# Create probability plot without points
+plot_glm_probability_raster(
+  final_glm_model = final_weevil_model,
+  climate_data = bioclim_data,
+  buffered_region = buffered_region,
+  title = "GLM Probability of Weevil Occurrence (Present)"
+)
+```
+
+```{r}
+#| label: plot-weevil-glm-probability-with-points
+#| description: "Visualize GLM probability of weevil occurrence with presence points"
+
+# Create probability plot with presence points
+plot_probability_raster_and_presence(
+  weevil_presence_data, 
+  final_weevil_model, 
+  buffered_region, 
+  weevil_colour, 
+  title = "GLM Predicted Probability of Weevil Occurrence"
+)
+
+```
+
+
+Add discussion and interpretation of the weevil distribution model results
+
+
+##  Question 3: Species Overlap Analysis
+
+modified from ...
+
+```{r}
+#| label: process-species-overlap-data
+#| warning: false
+#| description: "Prepare spatial data for species overlap calculation"
+
+# Convert presence data to sf objects
+palm_sf <- st_as_sf(palm_presence_data, coords = c("lon", "lat"), crs = 4326)
+weevil_sf <- st_as_sf(weevil_presence_data, coords = c("lon", "lat"), crs = 4326)
+
+# Project to metric CRS 
+crs_proj <- 3857
+palm_proj <- st_transform(palm_sf, crs = crs_proj)
+weevil_proj <- st_transform(weevil_sf, crs = crs_proj)
+
+# Create buffer around palm presence points
+palm_buffer <- st_buffer(palm_proj, dist = 10000)
+
+# Calculate spatial intersection (weevils inside buffer)
+weevil_overlap <- st_intersection(weevil_proj, palm_buffer)
+
+```
+
+```{r}
+#| label: plot-species-overlap
+#| description: "Visualize spatial overlap between palm and weevil distributions"
+
+# Source plotting functions
+source(here("functions", "plotting.R"))
+
+plot_species_overlap_points(
+  palm_points = palm_proj,
+  weevil_points = weevil_proj,
+  overlap_points = weevil_overlap,
+  title = "Palm and Weevil Presence Overlap"
+)
+
+```
+
+```{r}
+#| label: calculate-overlap-percentage
+#| description: "Calculate the percentage of weevil points within the palm buffer"
+
+overlap_percentage <- mean(
+  rowSums(st_within(weevil_proj, palm_buffer, sparse = FALSE)) > 0
+) * 100
+
+print(overlap_percentage)
+
+```
+Add comprehensive discussion of species overlap results
+
+
+
+
+#### Question 4
+
+Here, we examine whether the current distribution of Phoenix dactylifera (date palm) is influenced by the presence of Rhynchophorus ferrugineus (red palm weevil), while also accounting for climatic variables. To do this, we build a Generalised Linear Model (GLM) with palm presence as the response.
+
+We begin by identifying where weevils occur within a 10 km buffer around palm observations.
+
+```{r}
+## 
+
+#...
+weevil_sf <- st_as_sf(weevil_presence_data, coords = c("lon", "lat"), crs = 4326)
+weevil_proj <- st_transform(weevil_sf, crs = 3857)
+weevil_buffer <- st_buffer(weevil_proj, dist = 10000)  # 10 km buffer
+
+
+# ...
+palm_sf <- st_as_sf(palm_model_data, coords = c("lon", "lat"), crs = 4326) %>%
+  st_transform(crs = st_crs(weevil_overlap))
+
+# Check if each palm point intersects that weevil buffer
+palm_model_data$weevil_overlap <- as.integer(
+  lengths(st_intersects(palm_sf, weevil_buffer)) > 0
+)
+
+# ...
+glm_biotic_dependence <- glm(
+  presence ~ bio5 + bio6 + bio14 + bio16 + weevil_overlap,
+  data = palm_model_data,
+  family = binomial(link = "logit")
+)
+
+# Step 4: View model summary
+summary(glm_biotic_dependence)
+
+```
+
+While 28% of weevil presence points fall within the buffered distribution of palms, only 2 palm presence points were found to overlap spatially with weevil presence. This asymmetry suggests that while weevils may follow palms, the converse is not supported in the data. The resulting logistic model, which tested whether palm presence was influenced by weevil proximity, found no significant effect due to the lack of overlap (p = 0.976).
+
+
+
+
+##### Question 5
+
+Step 1: Load Future Climate Projections
+We'll use CMIP6 data for the period 2061-2080, selecting the CanESM5 model and SSP2-4.5 scenario.
+
+```{r}
+
+#| label: prepare-future-bioclim-data
+#| description: "Load or download and process future CMIP6 bioclimatic raster data (2061–2080, SSP2-4.5)"
+
+# Define file path
+future_bioclim_file <- here("data", "raw", "climate", "cmip6_2061_2080_canesm5_ssp245.tif")
+
+if (file.exists(future_bioclim_file)) {
+  future_bioclim_data <- rast(future_bioclim_file)
+} else {
+  future_bioclim_data <- cmip6_world(
+    model = "CanESM5",
+    var = "bio", 
+    ssp = "245",
+    res = 10,
+    time = "2061-2080",
+    path = here("data", "raw", "climate")
+  ) %>%
+    magrittr::set_names(names(bioclim_data)) %>%
+    crop(buffered_region)
+
+  writeRaster(future_bioclim_data, future_bioclim_file, overwrite = TRUE)
+}
+
+
+```
+
+
+
+Step 2: Predict Future Distribution of Date Palm
+
+```{r}
+
+# ...
+
+# Predict future suitability based on final model
+palm_prediction_future <- predict(
+  future_bioclim_data,
+  final_palm_model,
+  ext = study_region,
+  type = "response"
+) %>%
+  crop(study_region)
+
+
+# Source plotting functions
+source(here("functions", "plotting.R"))
+# 
+plot_glm_probability_raster(
+  final_glm_model = final_palm_model,
+  climate_data = future_bioclim_data,
+  buffered_region = buffered_region,
+  title = "GLM Probability of Palm Occurrence (2061–2080)"
+)
+
+```
+
+Step 3: Predict Future Distribution of Red Palm Weevil
+```{r}
+## ---------------------------
+# Step 3: Predict Future Distribution of Red Palm Weevil ----
+
+# Predict future suitability based on final model
+weevil_prediction_future <- predict(
+  future_bioclim_data,
+  final_weevil_model,
+  ext = study_region,
+  type = "response"
+) %>%
+  crop(study_region)
+
+# Source plotting functions
+source(here("functions", "plotting.R"))
+# Plot 
+plot_glm_probability_raster(
+  final_glm_model = final_weevil_model,
+  climate_data = future_bioclim_data,
+  buffered_region = buffered_region,
+  title = "GLM Probability of Weevil Occurrence (2061–2080)"
+)
+
+```
+
+
+Step 4: Quantifying Range Changes
+We extract statistics on range contraction/expansion for each species.
+```{r}
+#| label: prepare-future-buffered-points
+#| description: "Threshold predictions, convert to sf points, project and buffer palm range"
+
+# Define threshold
+threshold <- 0.5
+
+# Convert raster predictions to binary (1 = suitable)
+palm_binary_future   <- palm_prediction_future >= threshold
+weevil_binary_future <- weevil_prediction_future >= threshold
+
+# Convert binary rasters to point geometries
+palm_future_points <- as.points(palm_binary_future, values = TRUE, na.rm = TRUE)
+
+# Get the actual layer name (first layer in raster)
+layer_name <- names(palm_binary_future)[1]
+
+# Subset where value == 1 (suitable habitat)
+palm_future_points <- palm_future_points[palm_future_points[[layer_name]] == 1, ]
+
+# Convert to sf object
+palm_future_points <- st_as_sf(palm_future_points, crs = 4326)
+
+
+weevil_future_points <- as.points(weevil_binary_future, values = TRUE, na.rm = TRUE)
+layer_name_weevil <- names(weevil_binary_future)[1]
+weevil_future_points <- weevil_future_points[weevil_future_points[[layer_name_weevil]] == 1, ]
+weevil_future_points <- st_as_sf(weevil_future_points, crs = 4326)
+
+# Reproject to metric CRS for buffering
+crs_proj <- 3857
+palm_future_proj   <- st_transform(palm_future_points, crs = crs_proj)
+weevil_future_proj <- st_transform(weevil_future_points, crs = crs_proj)
+
+# Create 10 km buffer around future palm points
+palm_future_buffer <- st_buffer(palm_future_proj, dist = 10000)
+
+```
+
+
+Step 5: Percentage Change in Species Range
+We calculate percentage change to determine if the species are expanding or contracting.
+```{r}
+#| label: calculate-overlap-percent-change
+#| description: "Calculate percentage change in palm–weevil overlap from present to future"
+
+# Calculate percentage of future weevils inside future palm buffer
+future_in_buffer <- weevil_future_proj %>%
+  st_within(palm_future_buffer, sparse = FALSE) %>%  # Spatial join: which weevils fall within the buffer
+  rowSums() > 0                                      # Logical vector: TRUE if within any buffer
+
+# Calculate percent change compared to present
+overlap_change_percent <- ((sum(future_in_buffer) - nrow(weevils_in_buffer)) / nrow(weevils_in_buffer)) * 100
+
+# Output nicely
+cat("Change in Palm–Weevil Overlap (Future vs Present):", round(overlap_change_percent, 2), "%\n")
+
+```
+
+
+
+The projected distribution of Phoenix dactylifera under CMIP6 climate data suggests a modest contraction in its suitable habitat, while Rhynchophorus ferrugineus is expected to maintain or slightly expand its range.
+
+When comparing future overlap (based on buffered proximity) with current overlap, the proportion of weevil presences falling within 10 km of suitable palm habitat increases, indicating a greater degree of spatial co-occurrence under future climate conditions.
+
+This suggests that the two species are likely to co-occur more frequently in future decades, potentially intensifying host–pest interactions in climatically favourable regions. Such findings reinforce the importance of incorporating biotic interactions when predicting species responses to climate change.
+
